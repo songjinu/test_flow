@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이탈리아 여행 구글지도</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #009639 0%, #ce2b37 50%, #009639 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 100px);
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .day-section {
+            border-bottom: 1px solid #eee;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .day-section:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .day-section.active {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .day-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .day-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: auto;
+        }
+        
+        .location-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        
+        .location-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-item:last-child {
+            border-bottom: none;
+        }
+        
+        .location-icon {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+        
+        .transportation {
+            background: #e8f5e8;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            color: #2e7d2e;
+        }
+        
+        .controls {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+        }
+        
+        .btn.active {
+            background: #FF5722;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+                order: 2;
+            }
+            
+            .map-container {
+                height: 60vh;
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🇮🇹 이탈리아 여행 구글지도</h1>
+        <p>2024.10.3 - 10.12 | 로마 → 피렌체 → 베네치아</p>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="controls">
+                <button class="btn" onclick="showAllMarkers()">전체 보기</button>
+                <button class="btn" onclick="showRoute()">경로 보기</button>
+                <button class="btn" onclick="resetMap()">지도 초기화</button>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(0)">
+                <div class="day-header">
+                    <span class="day-title">10/3 (목) - 도착</span>
+                    <span class="day-date">첫날</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">✈️</span>인천국제공항 (08:55)</li>
+                    <li class="location-item"><span class="location-icon">✈️</span>상하이푸둥공항 (경유)</li>
+                    <li class="location-item"><span class="location-icon">✈️</span>로마 피우미치노공항 (19:10)</li>
+                    <li class="location-item"><span class="location-icon">🏨</span>더 리버티 부티크 호텔</li>
+                </ul>
+                <div class="transportation">항공: 인천 → 상하이 → 로마</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(1)">
+                <div class="day-header">
+                    <span class="day-title">10/4 (금) - 바티칸</span>
+                    <span class="day-date">로마</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">⛪</span>바티칸박물관 & 성베드로대성당</li>
+                    <li class="location-item"><span class="location-icon">🍝</span>Ristorante Pizzeria Castello</li>
+                    <li class="location-item"><span class="location-icon">🍦</span>올드브릿지 젤라또</li>
+                </ul>
+                <div class="transportation">지하철 A선 Ottaviano역 이용</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(2)">
+                <div class="day-header">
+                    <span class="day-title">10/5 (토) - 남부투어</span>
+                    <span class="day-date">Day Tour</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🚌</span>남부투어 (나폴리/아말피 추정)</li>
+                </ul>
+                <div class="transportation">투어버스 이용</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(3)">
+                <div class="day-header">
+                    <span class="day-title">10/6 (일) - 남부투어</span>
+                    <span class="day-date">복귀</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🌊</span>남부투어 계속</li>
+                    <li class="location-item"><span class="location-icon">🏨</span>로마 호텔 복귀</li>
+                </ul>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(4)">
+                <div class="day-header">
+                    <span class="day-title">10/7 (월) - 로마→피렌체</span>
+                    <span class="day-date">이동일</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🏛️</span>콜로세움</li>
+                    <li class="location-item"><span class="location-icon">🏛️</span>포로 로마노</li>
+                    <li class="location-item"><span class="location-icon">⛲</span>나보나 광장</li>
+                    <li class="location-item"><span class="location-icon">🏛️</span>판테온</li>
+                    <li class="location-item"><span class="location-icon">⛲</span>트레비 분수</li>
+                    <li class="location-item"><span class="location-icon">🚄</span>Roma Termini → Firenze (17:40)</li>
+                    <li class="location-item"><span class="location-icon">🏨</span>호텔 글랜스 인 피렌체</li>
+                </ul>
+                <div class="transportation">고속열차 1시간 37분</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(5)">
+                <div class="day-header">
+                    <span class="day-title">10/8 (화) - 피렌체</span>
+                    <span class="day-date">예술의 도시</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🎨</span>우피치 미술관 (09:00-12:00)</li>
+                    <li class="location-item"><span class="location-icon">🍝</span>Il Ricettario (13:00 예약)</li>
+                    <li class="location-item"><span class="location-icon">🌉</span>베키오 다리</li>
+                    <li class="location-item"><span class="location-icon">⛪</span>피렌체 대성당</li>
+                    <li class="location-item"><span class="location-icon">🍦</span>PerchÉ no! (수박 그라니따)</li>
+                    <li class="location-item"><span class="location-icon">☕</span>Caffè Gilli</li>
+                    <li class="location-item"><span class="location-icon">🏔️</span>미켈란젤로 광장</li>
+                </ul>
+                <div class="transportation">대부분 도보, 미켈란젤로 광장은 버스 #12</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(6)">
+                <div class="day-header">
+                    <span class="day-title">10/9 (수) - 피렌체→베네치아</span>
+                    <span class="day-date">이동일</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🚄</span>Firenze → Venezia Mestre (10:39)</li>
+                    <li class="location-item"><span class="location-icon">🏨</span>Staycity Aparthotels (메스트레)</li>
+                    <li class="location-item"><span class="location-icon">🍝</span>Hostaria Vite Rossa</li>
+                    <li class="location-item"><span class="location-icon">🍝</span>Ristorantino Da Carla</li>
+                </ul>
+                <div class="transportation">고속열차 2시간 16분</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(7)">
+                <div class="day-header">
+                    <span class="day-title">10/10 (목) - 베네치아</span>
+                    <span class="day-date">물의 도시</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">🌉</span>리알토 다리</li>
+                    <li class="location-item"><span class="location-icon">🏛️</span>산마르코 광장</li>
+                    <li class="location-item"><span class="location-icon">⛪</span>산마르코 대성당</li>
+                    <li class="location-item"><span class="location-icon">🍝</span>L'Osteria Le Guglie</li>
+                    <li class="location-item"><span class="location-icon">🚤</span>곤돌라 체험 (선택)</li>
+                </ul>
+                <div class="transportation">바포레토(수상버스) 이용</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(8)">
+                <div class="day-header">
+                    <span class="day-title">10/11 (금) - 출발</span>
+                    <span class="day-date">마지막 날</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">✈️</span>베네치아 마르코 폴로 공항</li>
+                    <li class="location-item"><span class="location-icon">✈️</span>베네치아 출발 (11:30)</li>
+                </ul>
+                <div class="transportation">공항버스 20분</div>
+            </div>
+            
+            <div class="day-section" onclick="focusDay(9)">
+                <div class="day-header">
+                    <span class="day-title">10/12 (토) - 도착</span>
+                    <span class="day-date">귀국</span>
+                </div>
+                <ul class="location-list">
+                    <li class="location-item"><span class="location-icon">✈️</span>상하이푸둥공항 (05:20)</li>
+                    <li class="location-item"><span class="location-icon">✈️</span>인천국제공항 (15:25)</li>
+                </ul>
+                <div class="transportation">항공: 상하이 경유 인천</div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+        let directionsService;
+        let directionsRenderer;
+        
+        // 여행지 데이터
+        const travelData = [
+            {
+                day: 0,
+                title: "10/3 도착",
+                locations: [
+                    { name: "인천국제공항", lat: 37.4639, lng: 126.4407, type: "airport" },
+                    { name: "상하이푸둥공항", lat: 31.1443, lng: 121.8083, type: "airport" },
+                    { name: "로마 피우미치노공항", lat: 41.8003, lng: 12.2389, type: "airport" },
+                    { name: "더 리버티 부티크 호텔", lat: 41.9044, lng: 12.5050, type: "hotel" }
+                ]
+            },
+            {
+                day: 1,
+                title: "10/4 바티칸",
+                locations: [
+                    { name: "바티칸박물관", lat: 41.9029, lng: 12.4534, type: "attraction" },
+                    { name: "Ristorante Pizzeria Castello", lat: 41.8997, lng: 12.4565, type: "restaurant" },
+                    { name: "올드브릿지 젤라또", lat: 41.9064, lng: 12.4564, type: "gelato" }
+                ]
+            },
+            {
+                day: 2,
+                title: "10/5 남부투어",
+                locations: [
+                    { name: "남부투어 지역 (추정)", lat: 40.8518, lng: 14.2681, type: "tour" }
+                ]
+            },
+            {
+                day: 3,
+                title: "10/6 남부투어 복귀",
+                locations: [
+                    { name: "더 리버티 부티크 호텔", lat: 41.9044, lng: 12.5050, type: "hotel" }
+                ]
+            },
+            {
+                day: 4,
+                title: "10/7 로마→피렌체",
+                locations: [
+                    { name: "콜로세움", lat: 41.8902, lng: 12.4922, type: "attraction" },
+                    { name: "포로 로마노", lat: 41.8921, lng: 12.4864, type: "attraction" },
+                    { name: "나보나 광장", lat: 41.8992, lng: 12.4731, type: "attraction" },
+                    { name: "판테온", lat: 41.8986, lng: 12.4769, type: "attraction" },
+                    { name: "트레비 분수", lat: 41.9009, lng: 12.4833, type: "attraction" },
+                    { name: "Roma Termini", lat: 41.9013, lng: 12.5016, type: "station" },
+                    { name: "호텔 글랜스 인 피렌체", lat: 43.7775, lng: 11.2524, type: "hotel" }
+                ]
+            },
+            {
+                day: 5,
+                title: "10/8 피렌체",
+                locations: [
+                    { name: "우피치 미술관", lat: 43.7678, lng: 11.2553, type: "attraction" },
+                    { name: "Il Ricettario", lat: 43.7689, lng: 11.2543, type: "restaurant" },
+                    { name: "베키오 다리", lat: 43.7679, lng: 11.2531, type: "attraction" },
+                    { name: "피렌체 대성당", lat: 43.7731, lng: 11.2560, type: "attraction" },
+                    { name: "PerchÉ no!", lat: 43.7708, lng: 11.2554, type: "gelato" },
+                    { name: "미켈란젤로 광장", lat: 43.7629, lng: 11.2651, type: "attraction" }
+                ]
+            },
+            {
+                day: 6,
+                title: "10/9 피렌체→베네치아",
+                locations: [
+                    { name: "Firenze S.M.N.", lat: 43.7767, lng: 11.2480, type: "station" },
+                    { name: "Venice Mestre", lat: 45.4825, lng: 12.2318, type: "station" },
+                    { name: "Staycity Aparthotels", lat: 45.4810, lng: 12.2388, type: "hotel" },
+                    { name: "Ristorantino Da Carla", lat: 45.4855, lng: 12.2425, type: "restaurant" }
+                ]
+            },
+            {
+                day: 7,
+                title: "10/10 베네치아",
+                locations: [
+                    { name: "리알토 다리", lat: 45.4380, lng: 12.3359, type: "attraction" },
+                    { name: "산마르코 광장", lat: 45.4342, lng: 12.3385, type: "attraction" },
+                    { name: "L'Osteria Le Guglie", lat: 45.4448, lng: 12.3237, type: "restaurant" }
+                ]
+            },
+            {
+                day: 8,
+                title: "10/11 출발",
+                locations: [
+                    { name: "베네치아 마르코 폴로 공항", lat: 45.5047, lng: 12.3517, type: "airport" }
+                ]
+            },
+            {
+                day: 9,
+                title: "10/12 도착",
+                locations: [
+                    { name: "인천국제공항", lat: 37.4639, lng: 126.4407, type: "airport" }
+                ]
+            }
+        ];
+        
+        const markerIcons = {
+            hotel: '🏨',
+            restaurant: '🍝',
+            attraction: '🏛️',
+            gelato: '🍦',
+            airport: '✈️',
+            station: '🚄',
+            tour: '🚌'
+        };
+        
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 6,
+                center: { lat: 42.8333, lng: 12.8333 }, // 이탈리아 중심
+                mapTypeId: 'terrain'
+            });
+            
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: false,
+                polylineOptions: {
+                    strokeColor: '#e74c3c',
+                    strokeWeight: 4,
+                    strokeOpacity: 0.8
+                }
+            });
+            
+            showAllMarkers();
+        }
+        
+        function showAllMarkers() {
+            clearMarkers();
+            
+            travelData.forEach((dayData, dayIndex) => {
+                dayData.locations.forEach((location, locIndex) => {
+                    const marker = new google.maps.Marker({
+                        position: { lat: location.lat, lng: location.lng },
+                        map: map,
+                        title: `${dayData.title}: ${location.name}`,
+                        label: {
+                            text: markerIcons[location.type] || '📍',
+                            fontSize: '18px'
+                        }
+                    });
+                    
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="font-family: Arial;">
+                                <h3 style="margin: 0; color: #333;">${location.name}</h3>
+                                <p style="margin: 5px 0; color: #666;">${dayData.title}</p>
+                                <p style="margin: 0; font-size: 12px; color: #888;">타입: ${location.type}</p>
+                            </div>
+                        `
+                    });
+                    
+                    marker.addListener('click', () => {
+                        infoWindow.open(map, marker);
+                    });
+                    
+                    markers.push(marker);
+                });
+            });
+        }
+        
+        function focusDay(dayIndex) {
+            clearMarkers();
+            
+            // 사이드바 활성화
+            document.querySelectorAll('.day-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.day-section')[dayIndex].classList.add('active');
+            
+            const dayData = travelData[dayIndex];
+            const bounds = new google.maps.LatLngBounds();
+            
+            dayData.locations.forEach((location) => {
+                const marker = new google.maps.Marker({
+                    position: { lat: location.lat, lng: location.lng },
+                    map: map,
+                    title: location.name,
+                    label: {
+                        text: markerIcons[location.type] || '📍',
+                        fontSize: '20px'
+                    },
+                    animation: google.maps.Animation.DROP
+                });
+                
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="font-family: Arial;">
+                            <h3 style="margin: 0; color: #333;">${location.name}</h3>
+                            <p style="margin: 5px 0; color: #666;">${dayData.title}</p>
+                            <p style="margin: 0; font-size: 12px; color: #888;">타입: ${location.type}</p>
+                        </div>
+                    `
+                });
+                
+                marker.addListener('click', () => {
+                    infoWindow.open(map, marker);
+                });
+                
+                markers.push(marker);
+                bounds.extend({ lat: location.lat, lng: location.lng });
+            });
+            
+            if (dayData.locations.length > 0) {
+                map.fitBounds(bounds);
+                if (dayData.locations.length === 1) {
+                    map.setZoom(12);
+                }
+            }
+        }
+        
+        function showRoute() {
+            clearMarkers();
+            directionsRenderer.setMap(null);
+            
+            // 주요 도시들만 경로로 표시
+            const majorCities = [
+                { lat: 41.9028, lng: 12.4964 }, // 로마
+                { lat: 43.7696, lng: 11.2558 }, // 피렌체
+                { lat: 45.4408, lng: 12.3155 }  // 베네치아
+            ];
+            
+            const waypoints = majorCities.slice(1, -1).map(city => ({
+                location: new google.maps.LatLng(city.lat, city.lng),
+                stopover: true
+            }));
+            
+            const request = {
+                origin: new google.maps.LatLng(majorCities[0].lat, majorCities[0].lng),
+                destination: new google.maps.LatLng(majorCities[majorCities.length - 1].lat, majorCities[majorCities.length - 1].lng),
+                waypoints: waypoints,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+            
+            directionsRenderer.setMap(map);
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                }
+            });
+        }
+        
+        function resetMap() {
+            clearMarkers();
+            directionsRenderer.setMap(null);
+            map.setCenter({ lat: 42.8333, lng: 12.8333 });
+            map.setZoom(6);
+            
+            document.querySelectorAll('.day-section').forEach(section => {
+                section.classList.remove('active');
+            });
+        }
+        
+        function clearMarkers() {
+            markers.forEach(marker => {
+                marker.setMap(null);
+            });
+            markers = [];
+        }
+    </script>
+    
+    <script async defer 
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-7j06I85KUg9sjRiMbm-3zaRek-czMbU&callback=initMap&libraries=geometry">
+    </script>
+    
+    <script>
+        // Google Maps API 키가 없는 경우를 위한 대체 초기화
+        if (typeof google === 'undefined') {
+            setTimeout(() => {
+                if (typeof google === 'undefined') {
+                    document.getElementById('map').innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; flex-direction: column;">
+                            <h3 style="color: #666;">구글 지도 로딩 중...</h3>
+                            <p style="color: #888;">Google Maps API 키가 필요합니다.</p>
+                            <p style="color: #888;">실제 사용시에는 Google Maps API 키를 추가해주세요.</p>
+                        </div>
+                    `;
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
