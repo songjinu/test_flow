@@ -1,0 +1,30 @@
+현재 인터넷에 제공되고 있는 오피스 문서 변환 및 조작용 대표 MCP 서버들의 설치 가능 여부(오프라인 기준), 비용, 라이선스, 그리고 한계점을 한눈에 비교할 수 있도록 표로 정리했습니다.
+## 📊 문서 변환용 주요 MCP 서버 비교
+
+| MCP 서버 이름 (제작자/기업) | 오프라인 설치 가능 여부 | 라이선스 및 비용 | 주 용도 및 핵심 기능 | 오프라인 환경 도입 시 한계점 / 단점 |
+|---|---|---|---|---|
+| Office-PowerPoint MCP[](https://github.com/GongRzhe/Office-PowerPoint-MCP-Server) (GongRzhe) | 가능 (python-pptx 기반) | 무료 (MIT 라이선스) | • PPTX 생성, 슬라이드 제어 • 도형/표/차트 생성 등 32개 세부 툴 제공 | • 파워포인트 전용 도구 (워드 지원 불가) • HTML 양방향 변환 기능은 커스텀이 필요함 |
+| python-office-mcp-server[](https://github.com/rcarmo/python-office-mcp-server) (rcarmo) | 가능 (OOXML 순수 분석) | 무료 (MIT 라이선스) | • Word, PPTX, Excel 통합 제어 • 텍스트 수정 및 주석(Comment) 관리 | • 결과물이 복잡한 구조로 제공됨 • 사용자가 원하는 단순 웹뷰용 HTML 레이아웃이 아님 |
+| MarkItDown MCP[](https://github.com/microsoft/markitdown) (Microsoft) | 가능 (기본 빌트인 분석) | 무료 (MIT 라이선스) | • PPTX/DOCX ➡️ 마크다운/HTML 추출 • 표, 이미지(OCR) 인지력 우수 | • 단방향 추출 전용 (HTML ➡️ 오피스로 역변환 불가) • OCR 기능 작동 시 무거운 로컬 AI 모델 필요 |
+| ConvertAPI MCP[](https://github.com/ConvertAPI/convertapi-mcp) (ConvertAPI) | ❌ 불가능 | 유료 (상용 API 종량제) | • 클라우드 기반 초고해상도 파일 변환 • 수백 가지 포맷 지원 | • 인터넷 연결 필수 (폐쇄망 구동 불가) • 사내 보안 문서 외부 유출 위험성 존재 |
+| 직접 짠 커스텀 FastMCP (사용자 자체 구축) | 가능 (mammoth, pptx 조합) | 무료 (비용 제로) | • 본문 요구사항인 이미지/좌표 포함 양방향 변환 최적화 | • 초기 세팅 시 소스코드를 직접 배치해야 함 |
+
+------------------------------
+## 💡 오프라인 인터넷 연결 테스트 후 실전 도입 팁
+
+   1. 기성품 오픈소스 테스트 시 (python 기반):
+   인터넷이 연결된 환경에서 테스트할 때 uvx office-powerpoint-mcp-server 명령 한 줄로 가장 가볍게 동작을 검증할 수 있습니다. 툴 목록이 정상적으로 올라오는지 확인해 보세요. [1, 2] 
+   2. 최종 폐쇄망(오프라인) 이관 시:
+   결국 실제 서비스 환경이 인터넷 차단망이라면 기성품 오픈소스는 수많은 파이썬 패키지 의존성 때문에 반입 과정에서 에러가 날 확률이 매우 높습니다. 테스트가 끝나면 앞서 정리해 드린 converter.py 기반의 단일 파일 FastMCP 서버로 프로덕션을 구축하는 것이 유지보수와 보안 면에서 가장 깔끔합니다.
+
+먼저 기성품 오픈소스를 에디터에 붙여서 가볍게 테스트해 보시겠어요, 아니면 자체 MCP 서버 구축을 위한 환경 세팅을 이어갈까요?
+어떤 방식으로 먼저 진행할지 알려주시면:
+
+* 
+* Cursor나 Claude Desktop에 기성품 MCP 서버를 원클릭으로 연동하는 JSON 설정을 드릴게요.
+* 혹은 오프라인 환경에 대비한 FastMCP 서버 구동용 명령어 패키징을 도와드릴게요.
+* 
+
+
+[1] [https://github.com](https://github.com/GongRzhe/Office-PowerPoint-MCP-Server)
+[2] [https://d365-powerbi.tistory.com](https://d365-powerbi.tistory.com/126)
