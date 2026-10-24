@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>한빛정밀 A동 · 실내 경로탐색 프로토타입</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;min-height:100vh}
+header{padding:14px 16px;border-bottom:1px solid #232c3d}
+header h1{font-size:18px}
+header p{font-size:12px;color:#8b98ab;margin-top:2px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid #232c3d;background:#111722}
+.controls label{font-size:13px;color:#8b98ab}
+select,button{font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid #2a3547;background:#1a2230;color:#e6edf3}
+button{cursor:pointer;font-weight:600}
+button.primary{background:#ffd23f;border-color:#ffd23f;color:#1a1a1a}
+button.floor.active{background:#22d3ee;border-color:#22d3ee;color:#062a30}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:#8b98ab;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:#22d3ee}
+.hint{width:100%;font-size:12px;color:#8b98ab}
+main{display:flex;gap:12px;padding:12px 16px;align-items:flex-start}
+.map-wrap{position:relative;flex:1 1 auto;min-width:0;background:#0a0e14;border:1px solid #232c3d;border-radius:12px;overflow:hidden}
+svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}
+.panel{flex:0 0 300px;background:#111722;border:1px solid #232c3d;border-radius:12px;padding:14px}
+.panel h2{font-size:14px;margin-bottom:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stat{background:#0d131c;border:1px solid #232c3d;border-radius:8px;padding:8px;text-align:center}
+.stat b{display:block;font-size:16px;color:#ffd23f}
+.stat span{font-size:11px;color:#8b98ab}
+#steps{list-style:none;font-size:13px;display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto}
+#steps li{background:#0d131c;border:1px solid #232c3d;border-radius:8px;padding:8px 10px;line-height:1.45}
+#steps li b{color:#ffd23f}
+.legend{font-size:11px;color:#8b98ab;margin-top:10px;line-height:1.7}
+#toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%) translateY(10px);background:rgba(10,14,20,.94);border:1px solid #22d3ee;color:#e6edf3;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;max-width:94%;z-index:5}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast b{color:#22d3ee}
+@media(max-width:920px){main{flex-direction:column}.panel{flex:1 1 auto;width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <h1>한빛정밀 A동 · 실내 경로탐색 프로토타입</h1>
+  <p>가상 도면 기반 데모 · 외부 지도/서버 없이 동작 · A* 최단경로</p>
+</header>
+<div class="controls">
+  <label>출발지 <select id="fromSel"><option value="">선택</option></select></label>
+  <label>목적지 <select id="toSel"><option value="">선택</option></select></label>
+  <button class="primary" id="findBtn">경로 찾기</button>
+  <button id="replayBtn">↻ 다시 재생</button>
+  <button class="floor active" id="f1Btn">1F 생산층</button>
+  <button class="floor" id="f2Btn">2F 연구·사무층</button>
+  <label class="chk"><input type="checkbox" id="graphToggle"/> 경로망 보기</label>
+  <div class="hint">방을 직접 클릭해도 됩니다 — 첫 클릭은 출발지, 두 번째 클릭은 목적지로 지정됩니다.</div>
+</div>
+<main>
+  <div class="map-wrap">
+    <svg id="map" viewBox="0 0 830 600" role="img" aria-label="한빛정밀 A동 도면"></svg>
+    <div id="toast"></div>
+  </div>
+  <aside class="panel">
+    <h2 id="routeTitle">경로를 선택해 주세요</h2>
+    <div class="stats">
+      <div class="stat"><b id="statDist">-</b><span>총 거리</span></div>
+      <div class="stat"><b id="statTime">-</b><span>도보 예상</span></div>
+      <div class="stat"><b id="statFloors">-</b><span>층 이동</span></div>
+    </div>
+    <ol id="steps"></ol>
+    <div class="legend">
+      🟡 노란선: 안내 경로 · 🟢 출발지 · 🔴 목적지<br/>
+      경로망 보기: 시안색 노드/엣지가 라우팅 그래프입니다<br/>
+      축척: 복도 1칸 ≈ 24m · 도보 80m/분 기준
+    </div>
+  </aside>
+</main>
+<noscript>이 데모는 JavaScript가 필요합니다.</noscript>
+<script>
+/*__LOGIC_START__*/
+const SCALE = 0.2; // meters per SVG px
+const NODES = {
+  s1:{x:100,y:310,f:1,t:'hall'}, s2:{x:220,y:310,f:1,t:'hall'}, s3:{x:340,y:310,f:1,t:'hall'},
+  el1:{x:400,y:310,f:1,t:'elev',label:'엘리베이터'},
+  s4:{x:460,y:310,f:1,t:'hall'}, s5:{x:580,y:310,f:1,t:'hall'}, s6:{x:700,y:310,f:1,t:'hall'},
+  stA1:{x:70,y:310,f:1,t:'stair',label:'계단 A'}, stB1:{x:740,y:310,f:1,t:'stair',label:'계단 B'},
+  d_lobby:{x:100,y:335,f:1,t:'room',label:'정문 로비'},
+  d_logi:{x:220,y:335,f:1,t:'room',label:'물류창고'},
+  d_mat:{x:340,y:335,f:1,t:'room',label:'자재창고'},
+  d_qa:{x:460,y:335,f:1,t:'room',label:'품질검사실'},
+  d_food:{x:580,y:335,f:1,t:'room',label:'식당'},
+  d_rest:{x:700,y:335,f:1,t:'room',label:'휴게실'},
+  d_lineA:{x:160,y:285,f:1,t:'room',label:'생산라인 A'},
+  d_lineB:{x:400,y:285,f:1,t:'room',label:'생산라인 B'},
+  d_asm:{x:640,y:285,f:1,t:'room',label:'조립공정'},
+  t1:{x:100,y:310,f:2,t:'hall'}, t2:{x:220,y:310,f:2,t:'hall'}, t3:{x:340,y:310,f:2,t:'hall'},
+  el2:{x:400,y:310,f:2,t:'elev',label:'엘리베이터'},
+  t4:{x:460,y:310,f:2,t:'hall'}, t5:{x:580,y:310,f:2,t:'hall'}, t6:{x:700,y:310,f:2,t:'hall'},
+  stA2:{x:70,y:310,f:2,t:'stair',label:'계단 A'}, stB2:{x:740,y:310,f:2,t:'stair',label:'계단 B'},
+  d_comp:{x:100,y:335,f:2,t:'room',label:'전산실'},
+  d_off:{x:220,y:335,f:2,t:'room',label:'사무실'},
+  d_ceo:{x:340,y:335,f:2,t:'room',label:'대표이사실'},
+  d_arc:{x:460,y:335,f:2,t:'room',label:'자료실'},
+  d_pantry:{x:580,y:335,f:2,t:'room',label:'탕비실'},
+  d_mr2:{x:700,y:335,f:2,t:'room',label:'소회의실'},
+  d_rd:{x:220,y:285,f:2,t:'room',label:'연구개발센터'},
+  d_mr:{x:580,y:285,f:2,t:'room',label:'대회의실'},
+  d_roof:{x:580,y:150,f:2,t:'room',label:'옥상정원'}
+};
+const EDGES = [
+  ['s1','s2'],['s2','s3'],['s3','el1'],['el1','s4'],['s4','s5'],['s5','s6'],
+  ['stA1','s1'],['stB1','s6'],
+  ['d_lobby','s1'],['d_logi','s2'],['d_mat','s3'],['d_qa','s4'],['d_food','s5'],['d_rest','s6'],
+  ['d_lineA','s2'],['d_lineB','el1'],['d_asm','s5'],
+  ['t1','t2'],['t2','t3'],['t3','el2'],['el2','t4'],['t4','t5'],['t5','t6'],
+  ['stA2','t1'],['stB2','t6'],
+  ['d_comp','t1'],['d_off','t2'],['d_ceo','t3'],['d_arc','t4'],['d_pantry','t5'],['d_mr2','t6'],
+  ['d_rd','t2'],['d_mr','t5'],
+  ['d_roof','stB2',{dist:15,via:'stairB'}],
+  ['stA1','stA2',{dist:15,via:'stairA'}],
+  ['stB1','stB2',{dist:15,via:'stairB'}],
+  ['el1','el2',{dist:10,via:'elev'}]
+];
+const ADJ = {};
+function addEdge(a,b,opt){
+  opt = opt || {};
+  const A=NODES[a], B=NODES[b];
+  const dist = (opt.dist!=null) ? opt.dist : Math.round(Math.hypot(A.x-B.x,A.y-B.y)*SCALE*10)/10;
+  (ADJ[a]=ADJ[a]||[]).push({to:b,dist:dist,via:opt.via||null});
+  (ADJ[b]=ADJ[b]||[]).push({to:a,dist:dist,via:opt.via||null});
+}
+EDGES.forEach(function(e){ addEdge(e[0],e[1],e[2]||{}); });
+function hDist(a,b){
+  const A=NODES[a], B=NODES[b];
+  return Math.hypot(A.x-B.x,A.y-B.y)*SCALE;
+}
+function astar(start,goal){
+  if(start===goal) return [start];
+  const g={}, came={}, closed={}, f={}, open=[start];
+  g[start]=0; f[start]=hDist(start,goal);
+  while(open.length){
+    let bi=0;
+    for(let i=1;i<open.length;i++) if(f[open[i]]<f[open[bi]]) bi=i;
+    const cur=open.splice(bi,1)[0];
+    if(cur===goal){
+      const p=[cur]; let c=cur;
+      while(came[c]){ c=came[c]; p.unshift(c); }
+      return p;
+    }
+    closed[cur]=1;
+    const nbrs=ADJ[cur]||[];
+    for(let i=0;i<nbrs.length;i++){
+      const e=nbrs[i];
+      if(closed[e.to]) continue;
+      const ng=g[cur]+e.dist;
+      if(!(e.to in g)||ng<g[e.to]){
+        g[e.to]=ng; came[e.to]=cur; f[e.to]=ng+hDist(e.to,goal);
+        if(open.indexOf(e.to)<0) open.push(e.to);
+      }
+    }
+  }
+  return null;
+}
+function findRoute(startId,goalId){
+  const ids=astar(startId,goalId);
+  if(!ids) return null;
+  const segs=[]; let dist=0, floors=0;
+  for(let i=0;i<ids.length-1;i++){
+    const a=NODES[ids[i]], b=NODES[ids[i+1]];
+    const e=(ADJ[ids[i]]||[]).filter(function(x){return x.to===ids[i+1];})[0];
+    segs.push({from:a,to:b,dist:e.dist,via:e.via});
+    dist+=e.dist; if(e.via) floors++;
+  }
+  return {ids:ids,segs:segs,dist:dist,floors:floors};
+}
+/*__LOGIC_END__*/
+const VIA_NAME={elev:'엘리베이터',stairA:'계단 A',stairB:'계단 B'};
+const ROOMS=[
+  {name:'정문 로비',f:1,x:40,y:340,w:120,h:220,node:'d_lobby'},
+  {name:'물류창고',f:1,x:160,y:340,w:120,h:220,node:'d_logi'},
+  {name:'자재창고',f:1,x:280,y:340,w:120,h:220,node:'d_mat'},
+  {name:'품질검사실',f:1,x:400,y:340,w:120,h:220,node:'d_qa'},
+  {name:'식당',f:1,x:520,y:340,w:120,h:220,node:'d_food'},
+  {name:'휴게실',f:1,x:640,y:340,w:120,h:220,node:'d_rest'},
+  {name:'생산라인 A',f:1,x:40,y:40,w:240,h:240,node:'d_lineA'},
+  {name:'생산라인 B',f:1,x:280,y:40,w:240,h:240,node:'d_lineB'},
+  {name:'조립공정',f:1,x:520,y:40,w:240,h:240,node:'d_asm'},
+  {name:'연구개발센터',f:2,x:40,y:40,w:360,h:240,node:'d_rd'},
+  {name:'대회의실',f:2,x:400,y:160,w:360,h:120,node:'d_mr'},
+  {name:'옥상정원',f:2,x:400,y:40,w:360,h:120,node:'d_roof',terrace:true},
+  {name:'전산실',f:2,x:40,y:340,w:120,h:220,node:'d_comp'},
+  {name:'사무실',f:2,x:160,y:340,w:120,h:220,node:'d_off'},
+  {name:'대표이사실',f:2,x:280,y:340,w:120,h:220,node:'d_ceo'},
+  {name:'자료실',f:2,x:400,y:340,w:120,h:220,node:'d_arc'},
+  {name:'탕비실',f:2,x:520,y:340,w:120,h:220,node:'d_pantry'},
+  {name:'소회의실',f:2,x:640,y:340,w:120,h:220,node:'d_mr2'}
+];
+if (typeof document !== 'undefined'){
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map');
+const toast=document.getElementById('toast');
+const fromSel=document.getElementById('fromSel');
+const toSel=document.getElementById('toSel');
+function S(n,at,p){const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);if(p)p.appendChild(e);return e;}
+const FLOOR_G={},FAINT={},DONE={},MARKS={},GRAPH_G={};
+let currentFloor=1, markerG=null, marker=null, animToken=0, lastRoute=null;
+let fromName=null, toName=null;
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function showToast(html){toast.innerHTML=html;toast.classList.add('show');}
+function hideToast(){toast.classList.remove('show');}
+
+function buildFloors(){
+  [1,2].forEach(function(f){
+    const g=S('g',{id:'floor'+f},svg); FLOOR_G[f]=g;
+    S('rect',{x:40,y:40,width:720,height:520,fill:'#0f1620',stroke:'#7d8ea8','stroke-width':3},g);
+    S('rect',{x:40,y:280,width:720,height:60,fill:'#1b2434'},g);
+    ROOMS.filter(function(r){return r.f===f;}).forEach(function(r){
+      const rect=S('rect',{x:r.x,y:r.y,width:r.w,height:r.h,fill:r.terrace?'#123324':'#151d2a',
+        stroke:r.terrace?'#4ade80':'#54637d','stroke-width':1.5,rx:2,style:'cursor:pointer'},g);
+      rect.addEventListener('click',function(){onRoomClick(r);});
+      const t=S('text',{x:r.x+r.w/2,y:r.y+r.h/2,'text-anchor':'middle','dominant-baseline':'middle',
+        'font-size':r.w<140?12:14,fill:r.terrace?'#9ff0c0':'#c9d4e3','font-weight':600,'pointer-events':'none'},g);
+      t.textContent=r.name;
+      r._rect=rect;
+      const dn=NODES[r.node];
+      const dy=r.terrace?157:(dn.y<310?277:337);
+      S('rect',{x:dn.x-13,y:dy,width:26,height:6,fill:'#ffd23f',opacity:.85,'pointer-events':'none'},g);
+    });
+    // stairs / elevator boxes on corridor
+    function box(cx,label,fill,stroke){
+      S('rect',{x:cx-18,y:290,width:36,height:40,rx:4,fill:fill,stroke:stroke,'stroke-width':1.5},g);
+      const t=S('text',{x:cx,y:312,'text-anchor':'middle','dominant-baseline':'middle','font-size':10,fill:'#e6edf3','pointer-events':'none'},g);
+      t.textContent=label;
+    }
+    box(70,'계단A','#1f3a5f','#22d3ee');
+    box(400,'EL','#3a2f10','#ffd23f');
+    box(740,'계단B','#1f3a5f','#22d3ee');
+    // floor label
+    const fl=S('text',{x:60,y:72,'font-size':20,'font-weight':700,fill:'#e6edf3',opacity:.9,'pointer-events':'none'},g);
+    fl.textContent=(f===1?'1F · 생산층':'2F · 연구·사무층');
+    if(f===1){
+      const en=S('text',{x:100,y:548,'text-anchor':'middle','font-size':11,fill:'#8b98ab','pointer-events':'none'},g);
+      en.textContent='▼ 정문';
+    }
+    if(f===2){
+      S('rect',{x:408,y:48,width:344,height:104,fill:'none',stroke:'#4ade80','stroke-width':1.5,'stroke-dasharray':'6 4',opacity:.7,'pointer-events':'none'},g);
+      S('path',{d:'M760 100 H794 V310 H758',fill:'none',stroke:'#4ade80','stroke-width':2,'stroke-dasharray':'6 4',opacity:.8,'pointer-events':'none'},g);
+      const rt=S('text',{x:808,y:205,'text-anchor':'middle','font-size':11,fill:'#9ff0c0','pointer-events':'none',transform:'rotate(-90 808 205)'},g);
+      rt.textContent='옥상 연결통로 (계단 B)';
+    }
+    // scale bar
+    S('line',{x1:60,y1:585,x2:160,y2:585,stroke:'#8b98ab','stroke-width':2},g);
+    S('line',{x1:60,y1:580,x2:60,y2:590,stroke:'#8b98ab','stroke-width':2},g);
+    S('line',{x1:160,y1:580,x2:160,y2:590,stroke:'#8b98ab','stroke-width':2},g);
+    const sb=S('text',{x:110,y:576,'text-anchor':'middle','font-size':10,fill:'#8b98ab','pointer-events':'none'},g);
+    sb.textContent='20m';
+    // graph overlay
+    const gg=S('g',{id:'graph'+f,display:'none'},g); GRAPH_G[f]=gg;
+    const drawn={};
+    Object.keys(ADJ).forEach(function(a){
+      if(NODES[a].f!==f) return;
+      ADJ[a].forEach(function(e){
+        const b=e.to;
+        if(NODES[b].f!==f) return;
+        const k=[a,b].sort().join('|');
+        if(drawn[k]) return; drawn[k]=1;
+        const A=NODES[a],B=NODES[b];
+        S('line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:'#22d3ee','stroke-width':1.5,opacity:.55,'pointer-events':'none'},gg);
+      });
+      const A=NODES[a];
+      S('circle',{cx:A.x,cy:A.y,r:4,fill:A.t==='room'?'#fbbf24':'#22d3ee',opacity:.9,'pointer-events':'none'},gg);
+    });
+    // route layers
+    FAINT[f]=S('polyline',{points:'',fill:'none',stroke:'#ffd23f','stroke-width':9,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.18,'pointer-events':'none'},g);
+    DONE[f]=S('polyline',{points:'',fill:'none',stroke:'#ffd23f','stroke-width':5,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},g);
+    MARKS[f]=S('g',{},g);
+  });
+  markerG=S('g',{display:'none'},svg);
+  S('circle',{r:13,fill:'#ffd23f',opacity:.25,'pointer-events':'none'},markerG);
+  marker=S('circle',{r:8,fill:'#ffd23f',stroke:'#111','stroke-width':2,'pointer-events':'none'},markerG);
+}
+function setFloor(f){
+  currentFloor=f;
+  FLOOR_G[1].setAttribute('display',f===1?'block':'none');
+  FLOOR_G[2].setAttribute('display',f===2?'block':'none');
+  document.getElementById('f1Btn').classList.toggle('active',f===1);
+  document.getElementById('f2Btn').classList.toggle('active',f===2);
+}
+function pts(ids,f){
+  return ids.filter(function(id){return NODES[id].f===f;})
+            .map(function(id){return NODES[id].x+','+NODES[id].y;}).join(' ');
+}
+function clearRoute(){
+  animToken++;
+  [1,2].forEach(function(f){
+    FAINT[f].setAttribute('points',''); DONE[f].setAttribute('points','');
+    while(MARKS[f].firstChild) MARKS[f].removeChild(MARKS[f].firstChild);
+  });
+  markerG.setAttribute('display','none'); hideToast();
+}
+function refreshHighlights(){
+  ROOMS.forEach(function(r){
+    if(!r._rect) return;
+    let stroke=r.terrace?'#4ade80':'#54637d', w=1.5;
+    if(r.name===fromName){stroke='#34d399';w=3;}
+    if(r.name===toName){stroke='#f87171';w=3;}
+    r._rect.setAttribute('stroke',stroke); r._rect.setAttribute('stroke-width',w);
+  });
+}
+function buildSteps(route,fn,tn){
+  const steps=['<b>'+fn+'</b>에서 출발합니다'];
+  let run=0;
+  route.segs.forEach(function(s){
+    if(s.via){
+      if(run>=1) steps.push('복도를 따라 약 <b>'+Math.round(run)+'m</b> 이동합니다');
+      run=0;
+      steps.push('<b>'+VIA_NAME[s.via]+'</b>을 이용해 <b>'+s.to.f+'층</b>으로 이동합니다');
+    }else run+=s.dist;
+  });
+  if(run>=1) steps.push('복도를 따라 약 <b>'+Math.round(run)+'m</b> 이동합니다');
+  steps.push('<b>'+tn+'</b>에 도착합니다');
+  return steps;
+}
+function animateSeg(seg,token){
+  return new Promise(function(res){
+    const A=seg.from,B=seg.to;
+    const dur=Math.max(250,seg.dist/14*1000);
+    markerG.setAttribute('display','block');
+    marker.setAttribute('cx',A.x); marker.setAttribute('cy',A.y);
+    const t0=performance.now();
+    function fr(t){
+      if(token!==animToken){res(false);return;}
+      const k=Math.min(1,(t-t0)/dur);
+      marker.setAttribute('cx',A.x+(B.x-A.x)*k);
+      marker.setAttribute('cy',A.y+(B.y-A.y)*k);
+      if(k<1) requestAnimationFrame(fr); else res(true);
+    }
+    requestAnimationFrame(fr);
+  });
+}
+async function playRoute(route){
+  const token=++animToken;
+  for(let i=0;i<route.segs.length;i++){
+    const seg=route.segs[i];
+    if(seg.via){
+      showToast('<b>'+VIA_NAME[seg.via]+'</b> · '+seg.to.f+'층으로 이동 중');
+      setFloor(seg.to.f);
+      await sleep(1500);
+      if(token!==animToken) return;
+      hideToast();
+    }else{
+      if(currentFloor!==seg.from.f) setFloor(seg.from.f);
+      const ok=await animateSeg(seg,token);
+      if(!ok||token!==animToken) return;
+      const d=DONE[seg.from.f];
+      d.setAttribute('points',(d.getAttribute('points')+' '+seg.to.x+','+seg.to.y).trim());
+    }
+  }
+  if(token!==animToken) return;
+  showToast('목적지에 도착했습니다');
+  setTimeout(hideToast,1800);
+}
+function render(route,fn,tn){
+  clearRoute();
+  [1,2].forEach(function(f){ FAINT[f].setAttribute('points',pts(route.ids,f)); });
+  const s0=NODES[route.ids[0]], sN=NODES[route.ids[route.ids.length-1]];
+  DONE[s0.f].setAttribute('points',s0.x+','+s0.y);
+  S('circle',{cx:s0.x,cy:s0.y,r:10,fill:'#34d399',stroke:'#06281c','stroke-width':2},MARKS[s0.f]);
+  S('circle',{cx:sN.x,cy:sN.y,r:10,fill:'#f87171',stroke:'#3d0a0a','stroke-width':2},MARKS[sN.f]);
+  document.getElementById('routeTitle').textContent=fn+' → '+tn;
+  document.getElementById('statDist').textContent=Math.round(route.dist)+'m';
+  document.getElementById('statTime').textContent='약 '+Math.max(1,Math.round(route.dist/80))+'분';
+  document.getElementById('statFloors').textContent=route.floors+'회';
+  document.getElementById('steps').innerHTML=buildSteps(route,fn,tn).map(function(s){return '<li>'+s+'</li>';}).join('');
+  setFloor(s0.f);
+  playRoute(route);
+}
+function doRoute(){
+  const f=fromSel.value, t=toSel.value;
+  if(!f||!t) return;
+  fromName=f; toName=t;
+  refreshHighlights();
+  if(f===t){showToast('출발지와 목적지가 같습니다');setTimeout(hideToast,1500);return;}
+  const rf=ROOMS.filter(function(r){return r.name===f;})[0];
+  const rt=ROOMS.filter(function(r){return r.name===t;})[0];
+  const route=findRoute(rf.node,rt.node);
+  if(!route){showToast('경로를 찾을 수 없습니다');setTimeout(hideToast,1500);return;}
+  lastRoute={route:route,fromName:f,toName:t};
+  render(route,f,t);
+}
+function onRoomClick(r){
+  if(!fromName||(fromName&&toName)){fromName=r.name;toName=null;toSel.value='';}
+  else{toName=r.name;toSel.value=toName;}
+  fromSel.value=fromName;
+  refreshHighlights();
+  if(fromName&&toName) doRoute();
+}
+function fillSel(sel){
+  [1,2].forEach(function(f){
+    const og=document.createElement('optgroup');
+    og.label=(f===1?'1F 생산층':'2F 연구·사무층');
+    ROOMS.filter(function(r){return r.f===f;}).forEach(function(r){
+      const o=document.createElement('option');o.value=r.name;o.textContent=r.name;og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+buildFloors();
+fillSel(fromSel); fillSel(toSel);
+document.getElementById('findBtn').addEventListener('click',doRoute);
+document.getElementById('replayBtn').addEventListener('click',function(){
+  if(lastRoute) render(lastRoute.route,lastRoute.fromName,lastRoute.toName);
+});
+document.getElementById('f1Btn').addEventListener('click',function(){setFloor(1);});
+document.getElementById('f2Btn').addEventListener('click',function(){setFloor(2);});
+document.getElementById('graphToggle').addEventListener('change',function(e){
+  const d=e.target.checked?'block':'none';
+  GRAPH_G[1].setAttribute('display',d); GRAPH_G[2].setAttribute('display',d);
+});
+fromSel.addEventListener('change',function(){if(fromSel.value&&toSel.value)doRoute();});
+toSel.addEventListener('change',function(){if(fromSel.value&&toSel.value)doRoute();});
+setFloor(1);
+// 첫 화면 자동 데모: 정문 로비 → 연구개발센터
+setTimeout(function(){
+  fromSel.value='정문 로비'; toSel.value='연구개발센터';
+  doRoute();
+},700);
+}
+</script>
+</body>
+</html>
