@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:," />
+  <title>가나 퀴즈</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f3f4f7;
+      --surface: #ffffff;
+      --surface-2: #eaedf2;
+      --ink: #17191f;
+      --muted: #5b606b;
+      --line: #d8dce4;
+      --accent: #d83a3a;
+      --accent-deep: #aa272b;
+      --accent-soft: #fbe8e7;
+      --ok: #16704a;
+      --ok-soft: #ddf4e8;
+      --shadow: 0 14px 42px rgba(24, 29, 39, .09);
+      --focus: #176bd1;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111318;
+        --surface: #1a1d24;
+        --surface-2: #242832;
+        --ink: #f5f6f8;
+        --muted: #b1b6c1;
+        --line: #343a46;
+        --accent: #ff6662;
+        --accent-deep: #ff8582;
+        --accent-soft: #432426;
+        --ok: #72d7a6;
+        --ok-soft: #173b2d;
+        --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+        --focus: #79b6ff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-height: 100dvh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% -15%, color-mix(in srgb, var(--accent) 10%, transparent) 0, transparent 34rem),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+    button { font: inherit; color: inherit; }
+    button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    [hidden] { display: none !important; }
+
+    .app {
+      width: min(100%, 680px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+    }
+
+    .intro { margin: auto 0; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 15px;
+      color: var(--accent-deep);
+      font-size: .84rem;
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+    .stamp {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--accent);
+      border-radius: 5px;
+      color: var(--accent);
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1rem;
+      transform: rotate(-3deg);
+    }
+    h1 {
+      max-width: 590px;
+      margin: 0;
+      font-size: clamp(2.35rem, 9.5vw, 4.8rem);
+      line-height: .98;
+      letter-spacing: -.055em;
+      text-wrap: balance;
+    }
+    .lead {
+      max-width: 520px;
+      margin: 20px 0 30px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+    .setup {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 22px 22px 8px 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .group + .group { margin-top: 20px; }
+    .group-label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: .86rem;
+      font-weight: 750;
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      padding: 5px;
+      border-radius: 13px;
+      background: var(--surface-2);
+    }
+    .segmented button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .93rem;
+      font-weight: 700;
+    }
+    .segmented button[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+    .start-button, .primary-button {
+      width: 100%;
+      min-height: 56px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 14px 14px 5px 14px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+    .start-button:active, .primary-button:active { transform: translateY(1px); }
+    .small-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .78rem;
+      text-align: center;
+    }
+
+    .quiz-screen { width: 100%; margin: auto 0; }
+    .topline {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 18px;
+    }
+    .progress-track {
+      height: 7px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 99px;
+      background: var(--surface-2);
+    }
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width .25s ease;
+    }
+    .progress-text {
+      min-width: 54px;
+      color: var(--muted);
+      font-size: .84rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .quiz-card {
+      position: relative;
+      min-height: min(50vh, 390px);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: 30px 30px 10px 30px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .quiz-card::after {
+      content: "";
+      position: absolute;
+      right: -52px;
+      bottom: -65px;
+      width: 180px;
+      height: 180px;
+      border: 28px solid var(--accent-soft);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .script-label {
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 750;
+    }
+    .score-live {
+      padding: 6px 10px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+    .kana {
+      position: relative;
+      z-index: 1;
+      margin: 18px 0 8px;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: clamp(7rem, 35vw, 12rem);
+      font-weight: 600;
+      line-height: .95;
+      text-align: center;
+    }
+    .prompt {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: center;
+    }
+    .quiz-example {
+      position: relative;
+      z-index: 1;
+      min-height: 88px;
+      padding: 11px 12px;
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 14px;
+      place-items: center stretch;
+      border-top: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 86%, var(--accent-soft));
+    }
+    .quiz-example.revealed {
+      padding: 14px 12px;
+      border-radius: 13px 13px 4px 13px;
+      background: var(--ok-soft);
+    }
+    .hint-art {
+      width: 78px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+      font-size: 3rem;
+      line-height: 1;
+    }
+    .quiz-example-copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      text-align: left;
+    }
+    .quiz-example-label {
+      color: var(--ok);
+      font-size: .7rem;
+      font-weight: 800;
+    }
+    .quiz-example-word {
+      color: var(--ink);
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .quiz-example-reading,
+    .quiz-example-meaning {
+      color: var(--muted);
+      font-size: .73rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .quiz-example-meaning { color: var(--ink); font-weight: 750; }
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .answer {
+      min-height: 68px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 15px 15px 5px 15px;
+      background: var(--surface);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+    .answer:active { transform: scale(.985); }
+    .answer .ko { display: block; font-size: 1.03rem; font-weight: 800; }
+    .answer .romaji { display: block; margin-top: 2px; color: var(--muted); font-size: .76rem; }
+    .answer.correct {
+      border-color: var(--ok);
+      background: var(--ok-soft);
+    }
+    .answer.wrong {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .answer:disabled { cursor: default; opacity: 1; }
+    .feedback {
+      min-height: 28px;
+      margin: 12px 2px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 700;
+    }
+    .feedback.good { color: var(--ok); }
+    .feedback.bad { color: var(--accent-deep); }
+    .feedback-icon {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+      font-size: 1.65rem;
+      line-height: 1;
+    }
+    .feedback-copy { display: flex; flex-direction: column; gap: 1px; }
+    .praise-jp {
+      color: var(--ok);
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: 1.03rem;
+      font-weight: 800;
+    }
+    .answer-detail { color: var(--muted); font-size: .78rem; }
+    .next-button {
+      width: 100%;
+      min-height: 52px;
+      margin-top: 3px;
+      border: 0;
+      border-radius: 13px 13px 5px 13px;
+      background: var(--ink);
+      color: var(--surface);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .result-screen { margin: auto 0; text-align: center; }
+    .result-mark {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--accent);
+      border-radius: 14px;
+      color: var(--accent);
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      transform: rotate(-2deg);
+    }
+    .result-screen h2 { margin: 0; font-size: clamp(2rem, 9vw, 3.4rem); letter-spacing: -.045em; }
+    .result-copy { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
+    .score-panel {
+      margin: 24px 0 16px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line);
+      border-radius: 20px 20px 7px 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .score-panel > div + div { border-left: 1px solid var(--line); }
+    .big-num { display: block; font-size: 2.15rem; font-weight: 850; font-variant-numeric: tabular-nums; }
+    .stat-label { display: block; margin-top: 3px; color: var(--muted); font-size: .77rem; }
+    .missed {
+      margin: 16px 0 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      text-align: left;
+    }
+    .missed h3 { margin: 0 0 13px; font-size: .92rem; }
+    .missed-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .missed-item {
+      min-width: 54px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: var(--surface-2);
+      text-align: center;
+    }
+    .missed-item b { display: block; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.35rem; }
+    .missed-item span { display: block; margin-top: 1px; color: var(--muted); font-size: .68rem; }
+    .result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .secondary-button {
+      min-height: 56px;
+      margin-top: 22px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .result-actions .primary-button { margin-top: 22px; }
+
+    .chart-open-button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px 12px 5px 12px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .chart-screen {
+      width: 100%;
+      padding: 6px 0 28px;
+    }
+    .back-button {
+      min-height: 42px;
+      margin: 0 0 20px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--accent-deep);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .chart-screen h2 {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 3.3rem);
+      letter-spacing: -.045em;
+    }
+    .chart-lead {
+      margin: 10px 0 20px;
+      color: var(--muted);
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+    .chart-switch { margin-bottom: 16px; }
+    .chart-switch.segmented { grid-template-columns: 1fr 1fr; }
+    .kana-chart {
+      display: grid;
+      grid-template-columns: 34px repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 20px 20px 7px 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .chart-corner,
+    .vowel-label,
+    .row-label {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 800;
+    }
+    .vowel-label { min-height: 26px; }
+    .row-label {
+      border-radius: 7px;
+      background: var(--surface-2);
+      writing-mode: vertical-rl;
+      font-size: .68rem;
+      letter-spacing: .03em;
+    }
+    .kana-cell {
+      min-width: 0;
+      min-height: 64px;
+      padding: 5px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 11px 11px 4px 11px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+    .kana-cell:active { background: var(--accent-soft); }
+    .kana-cell .glyph {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: clamp(1.45rem, 7vw, 2rem);
+      font-weight: 650;
+      line-height: 1;
+    }
+    .kana-cell .sound {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .62rem;
+    }
+    .kana-empty { min-height: 64px; }
+    .chart-note {
+      margin: 13px 2px 0;
+      color: var(--muted);
+      font-size: .79rem;
+      line-height: 1.5;
+    }
+    .example-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      padding: 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(7, 9, 13, .58);
+    }
+    .example-card {
+      width: min(100%, 540px);
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 24px 24px 8px 24px;
+      background: var(--surface);
+      box-shadow: 0 22px 70px rgba(0,0,0,.3);
+    }
+    .example-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .example-kana {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: 4.5rem;
+      font-weight: 650;
+      line-height: .95;
+    }
+    .example-close {
+      min-width: 44px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--surface-2);
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+    .example-script {
+      margin: 8px 0 16px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+    .example-word {
+      margin: 0;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .example-reading,
+    .example-meaning {
+      margin: 7px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .example-meaning { color: var(--ink); font-weight: 750; }
+
+    @media (min-width: 620px) {
+      .example-overlay { align-items: center; }
+    }
+    @media (max-width: 410px) {
+      .app { padding-left: 14px; padding-right: 14px; }
+      .setup { padding: 16px; }
+      .quiz-card { min-height: 340px; padding: 18px; }
+      .answer { min-height: 62px; }
+    }
+    @media (max-height: 720px) {
+      .app { padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+      .quiz-card { min-height: 290px; }
+      .kana { font-size: clamp(5.8rem, 27vh, 8.5rem); margin: 8px 0 2px; }
+      .answers { margin-top: 11px; }
+      .answer { min-height: 58px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="intro" id="intro">
+      <p class="eyebrow"><span class="stamp" aria-hidden="true">読</span> 46자 읽기 연습</p>
+      <h1>보고, 읽고,<br>바로 확인하세요.</h1>
+      <p class="lead">히라가나와 가타카나를 섞어서 풀거나, 한 문자만 집중해서 연습할 수 있어요. 답은 한국어 소리와 로마자로 함께 표시됩니다.</p>
+
+      <div class="setup">
+        <div class="group">
+          <span class="group-label">문자 선택</span>
+          <div class="segmented" id="scriptOptions" role="group" aria-label="문자 선택">
+            <button type="button" data-value="mix" aria-pressed="true">섞어서</button>
+            <button type="button" data-value="hiragana" aria-pressed="false">히라가나</button>
+            <button type="button" data-value="katakana" aria-pressed="false">가타카나</button>
+          </div>
+        </div>
+        <div class="group">
+          <span class="group-label">문제 수</span>
+          <div class="segmented" id="countOptions" role="group" aria-label="문제 수 선택">
+            <button type="button" data-value="10" aria-pressed="true">10문제</button>
+            <button type="button" data-value="20" aria-pressed="false">20문제</button>
+            <button type="button" data-value="46" aria-pressed="false">46문제</button>
+          </div>
+        </div>
+        <button class="start-button" type="button" id="startBtn">퀴즈 시작</button>
+        <button class="chart-open-button" type="button" id="chartBtn">오십음도 전체표 보기</button>
+        <p class="small-note">새로 시작할 때마다 문제와 선택지가 섞여요.</p>
+      </div>
+    </section>
+
+    <section class="chart-screen" id="chart" hidden>
+      <button class="back-button" type="button" id="chartBackBtn">← 퀴즈 설정</button>
+      <h2>오십음도 전체표</h2>
+      <p class="chart-lead">글자를 누르면 인사말, 교통·숙소 표지, 메뉴처럼 여행에서 마주치는 예제와 읽는 법, 뜻을 볼 수 있어요.</p>
+      <div class="segmented chart-switch" id="chartScriptOptions" role="group" aria-label="오십음도 문자 선택">
+        <button type="button" data-value="hiragana" aria-pressed="true">히라가나</button>
+        <button type="button" data-value="katakana" aria-pressed="false">가타카나</button>
+      </div>
+      <div class="kana-chart" id="kanaChart" aria-label="히라가나 오십음도"></div>
+      <p class="chart-note">※ を는 현대 일본어에서 주로 목적격 조사로, ヲ는 외래어 표기에서도 드물게 사용돼요.</p>
+    </section>
+
+    <div class="example-overlay" id="exampleOverlay" role="dialog" aria-modal="true" aria-labelledby="exampleWord" hidden>
+      <div class="example-card">
+        <div class="example-head">
+          <span class="example-kana" id="exampleKana" lang="ja"></span>
+          <button class="example-close" type="button" id="exampleCloseBtn" aria-label="예제 닫기">×</button>
+        </div>
+        <p class="example-script" id="exampleScript"></p>
+        <p class="example-word" id="exampleWord" lang="ja"></p>
+        <p class="example-reading" id="exampleReading"></p>
+        <p class="example-meaning" id="exampleMeaning"></p>
+      </div>
+    </div>
+
+    <section class="quiz-screen" id="quiz" aria-live="polite" hidden>
+      <div class="topline">
+        <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+        <span class="progress-text" id="progressText">1 / 10</span>
+      </div>
+
+      <article class="quiz-card">
+        <div class="question-meta">
+          <span class="script-label" id="scriptLabel">히라가나</span>
+          <span class="score-live" id="scoreLive">정답 0</span>
+        </div>
+        <div class="kana" id="kana" lang="ja">あ</div>
+        <p class="prompt">이 글자를 어떻게 읽을까요?</p>
+        <div class="quiz-example" id="quizExample" aria-label="여행 예제 그림 힌트">
+          <span class="hint-art" id="quizHintArt" aria-hidden="true"></span>
+          <div class="quiz-example-copy" id="quizExampleCopy">
+            <span class="quiz-example-label" id="quizExampleLabel" hidden>여행에서 이렇게 써요</span>
+            <strong class="quiz-example-word" id="quizExampleWord" lang="ja"></strong>
+            <span class="quiz-example-reading" id="quizExampleReading" hidden></span>
+            <span class="quiz-example-meaning" id="quizExampleMeaning" hidden></span>
+          </div>
+        </div>
+      </article>
+
+      <div class="answers" id="answers" aria-label="답 선택"></div>
+      <div class="feedback" id="feedback" role="status" aria-live="assertive"></div>
+      <button class="next-button" type="button" id="nextBtn" hidden>다음 문제</button>
+    </section>
+
+    <section class="result-screen" id="result" hidden>
+      <div class="result-mark" aria-hidden="true" id="resultMark">良</div>
+      <h2 id="resultTitle">좋아요!</h2>
+      <p class="result-copy" id="resultCopy"></p>
+      <div class="score-panel">
+        <div><strong class="big-num" id="resultScore">0</strong><span class="stat-label">맞힌 문제</span></div>
+        <div><strong class="big-num" id="resultRate">0%</strong><span class="stat-label">정답률</span></div>
+      </div>
+      <div class="missed" id="missedBox" hidden>
+        <h3>다시 볼 글자</h3>
+        <div class="missed-list" id="missedList"></div>
+      </div>
+      <div class="result-actions">
+        <button class="secondary-button" type="button" id="homeBtn">설정 변경</button>
+        <button class="primary-button" type="button" id="retryBtn">한 번 더</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var kanaData = [
+        ["あ","ア","아","a"],["い","イ","이","i"],["う","ウ","우","u"],["え","エ","에","e"],["お","オ","오","o"],
+        ["か","カ","카","ka"],["き","キ","키","ki"],["く","ク","쿠","ku"],["け","ケ","케","ke"],["こ","コ","코","ko"],
+        ["さ","サ","사","sa"],["し","シ","시","shi"],["す","ス","스","su"],["せ","セ","세","se"],["そ","ソ","소","so"],
+        ["た","タ","타","ta"],["ち","チ","치","chi"],["つ","ツ","츠","tsu"],["て","テ","테","te"],["と","ト","토","to"],
+        ["な","ナ","나","na"],["に","ニ","니","ni"],["ぬ","ヌ","누","nu"],["ね","ネ","네","ne"],["の","ノ","노","no"],
+        ["は","ハ","하","ha"],["ひ","ヒ","히","hi"],["ふ","フ","후","fu"],["へ","ヘ","헤","he"],["ほ","ホ","호","ho"],
+        ["ま","マ","마","ma"],["み","ミ","미","mi"],["む","ム","무","mu"],["め","メ","메","me"],["も","モ","모","mo"],
+        ["や","ヤ","야","ya"],["ゆ","ユ","유","yu"],["よ","ヨ","요","yo"],
+        ["ら","ラ","라","ra"],["り","リ","리","ri"],["る","ル","루","ru"],["れ","レ","레","re"],["ろ","ロ","로","ro"],
+        ["わ","ワ","와","wa"],["を","ヲ","오","wo"],["ん","ン","응","n"]
+      ].map(function (x) { return { hira:x[0], kata:x[1], ko:x[2], romaji:x[3] }; });
+
+      var examples = {
+        a:{hira:["あさ","あさ · asa","아침"],kata:["アイス","あいす · aisu","아이스크림"]},
+        i:{hira:["いぬ","いぬ · inu","개"],kata:["イタリア","いたりあ · itaria","이탈리아"]},
+        u:{hira:["うみ","うみ · umi","바다"],kata:["ウール","うーる · uuru","울, 양모"]},
+        e:{hira:["えき","えき · eki","역"],kata:["エレベーター","えれべーたー · erebeetaa","엘리베이터"]},
+        o:{hira:["おちゃ","おちゃ · ocha","차"],kata:["オレンジ","おれんじ · orenji","오렌지"]},
+        ka:{hira:["かさ","かさ · kasa","우산"],kata:["カメラ","かめら · kamera","카메라"]},
+        ki:{hira:["きつね","きつね · kitsune","여우"],kata:["キウイ","きうい · kiui","키위"]},
+        ku:{hira:["くも","くも · kumo","구름"],kata:["クラス","くらす · kurasu","학급, 클래스"]},
+        ke:{hira:["けさ","けさ · kesa","오늘 아침"],kata:["ケーキ","けーき · keeki","케이크"]},
+        ko:{hira:["こえ","こえ · koe","목소리"],kata:["コーヒー","こーひー · koohii","커피"]},
+        sa:{hira:["さかな","さかな · sakana","생선, 물고기"],kata:["サラダ","さらだ · sarada","샐러드"]},
+        shi:{hira:["しお","しお · shio","소금"],kata:["シール","しーる · shiiru","스티커"]},
+        su:{hira:["すし","すし · sushi","초밥"],kata:["スープ","すーぷ · suupu","수프"]},
+        se:{hira:["せかい","せかい · sekai","세계"],kata:["セーター","せーたー · seetaa","스웨터"]},
+        so:{hira:["そら","そら · sora","하늘"],kata:["ソファ","そふぁ · sofa","소파"]},
+        ta:{hira:["たまご","たまご · tamago","달걀"],kata:["タクシー","たくしー · takushii","택시"]},
+        chi:{hira:["ちず","ちず · chizu","지도"],kata:["チーズ","ちーず · chiizu","치즈"]},
+        tsu:{hira:["つき","つき · tsuki","달"],kata:["ツアー","つあー · tsuaa","투어"]},
+        te:{hira:["てがみ","てがみ · tegami","편지"],kata:["テレビ","てれび · terebi","텔레비전"]},
+        to:{hira:["とけい","とけい · tokei","시계"],kata:["トマト","とまと · tomato","토마토"]},
+        na:{hira:["なつ","なつ · natsu","여름"],kata:["バナナ","ばなな · banana","바나나"]},
+        ni:{hira:["にく","にく · niku","고기"],kata:["スニーカー","すにーかー · suniikaa","운동화"]},
+        nu:{hira:["ぬの","ぬの · nuno","천, 직물"],kata:["カヌー","かぬー · kanuu","카누"]},
+        ne:{hira:["ねこ","ねこ · neko","고양이"],kata:["ネクタイ","ねくたい · nekutai","넥타이"]},
+        no:{hira:["のり","のり · nori","김"],kata:["ノート","のーと · nooto","노트"]},
+        ha:{hira:["はな","はな · hana","꽃"],kata:["ハンバーガー","はんばーがー · hanbaagaa","햄버거"]},
+        hi:{hira:["ひかり","ひかり · hikari","빛"],kata:["コーヒー","こーひー · koohii","커피"]},
+        fu:{hira:["ふね","ふね · fune","배"],kata:["フォーク","ふぉーく · fooku","포크"]},
+        he:{hira:["へや","へや · heya","방"],kata:["ヘリコプター","へりこぷたー · herikoputaa","헬리콥터"]},
+        ho:{hira:["ほし","ほし · hoshi","별"],kata:["ホテル","ほてる · hoteru","호텔"]},
+        ma:{hira:["まど","まど · mado","창문"],kata:["マンガ","まんが · manga","만화"]},
+        mi:{hira:["みず","みず · mizu","물"],kata:["ミルク","みるく · miruku","우유"]},
+        mu:{hira:["むし","むし · mushi","벌레"],kata:["ゲーム","げーむ · geemu","게임"]},
+        me:{hira:["めがね","めがね · megane","안경"],kata:["メロン","めろん · meron","멜론"]},
+        mo:{hira:["もり","もり · mori","숲"],kata:["モデル","もでる · moderu","모델"]},
+        ya:{hira:["やま","やま · yama","산"],kata:["タイヤ","たいや · taiya","타이어"]},
+        yu:{hira:["ゆき","ゆき · yuki","눈"],kata:["ユニフォーム","ゆにふぉーむ · yunifoomu","유니폼"]},
+        yo:{hira:["よる","よる · yoru","밤"],kata:["ヨーグルト","よーぐると · yooguruto","요구르트"]},
+        ra:{hira:["らいねん","らいねん · rainen","내년"],kata:["ラーメン","らーめん · raamen","라멘"]},
+        ri:{hira:["りんご","りんご · ringo","사과"],kata:["リモコン","りもこん · rimokon","리모컨"]},
+        ru:{hira:["くるま","くるま · kuruma","자동차"],kata:["ルール","るーる · ruuru","규칙"]},
+        re:{hira:["れきし","れきし · rekishi","역사"],kata:["レストラン","れすとらん · resutoran","레스토랑"]},
+        ro:{hira:["ろうそく","ろうそく · rousoku","초, 양초"],kata:["ロボット","ろぼっと · robotto","로봇"]},
+        wa:{hira:["わに","わに · wani","악어"],kata:["ワイン","わいん · wain","와인"]},
+        wo:{hira:["みずをのむ","みずを のむ · mizu o nomu","물을 마시다"],kata:["ヲタク","おたく · otaku","오타쿠(강한 관심을 가진 사람)"]},
+        n:{hira:["ほん","ほん · hon","책"],kata:["パン","ぱん · pan","빵"]}
+      };
+
+      examples = {
+        a:{hira:["ありがとう","ありがとう · arigatou","고마워요"],kata:["アメニティ","あめにてぃ · ameniti","객실 편의용품"]},
+        i:{hira:["いりぐち","いりぐち · iriguchi","입구(入口)"],kata:["インフォメーション","いんふぉめーしょん · infomeeshon","안내소"]},
+        u:{hira:["うけつけ","うけつけ · uketsuke","접수처(受付)"],kata:["ウーロンちゃ","うーろんちゃ · uuroncha","우롱차"]},
+        e:{hira:["えき","えき · eki","역(駅)"],kata:["エスカレーター","えすかれーたー · esukareetaa","에스컬레이터"]},
+        o:{hira:["おてあらい","おてあらい · otearai","화장실(お手洗い)"],kata:["オススメ","おすすめ · osusume","추천 메뉴"]},
+        ka:{hira:["かいさつ","かいさつ · kaisatsu","개찰구(改札)"],kata:["カード","かーど · kaado","카드"]},
+        ki:{hira:["きっぷ","きっぷ · kippu","표(切符)"],kata:["キャリーケース","きゃりーけーす · kyariikeesu","여행용 캐리어"]},
+        ku:{hira:["くうこう","くうこう · kuukou","공항(空港)"],kata:["クレジットカード","くれじっとかーど · kurejitto kaado","신용카드"]},
+        ke:{hira:["けんばいき","けんばいき · kenbaiki","승차권 발매기(券売機)"],kata:["ケーブルカー","けーぶるかー · keeburukaa","케이블카"]},
+        ko:{hira:["ここ","ここ · koko","여기"],kata:["コインロッカー","こいんろっかー · koin rokkaa","코인 로커"]},
+        sa:{hira:["さかな","さかな · sakana","생선, 물고기(魚)"],kata:["サービス","さーびす · saabisu","서비스, 무료 제공"]},
+        shi:{hira:["しんかんせん","しんかんせん · shinkansen","신칸센(新幹線)"],kata:["タクシー","たくしー · takushii","택시"]},
+        su:{hira:["すみません","すみません · sumimasen","실례합니다, 죄송합니다"],kata:["スーツケース","すーつけーす · suutsukeesu","여행가방"]},
+        se:{hira:["せき","せき · seki","좌석(席)"],kata:["セット","せっと · setto","세트 메뉴"]},
+        so:{hira:["そば","そば · soba","소바"],kata:["ソフトクリーム","そふとくりーむ · sofuto kuriimu","소프트아이스크림"]},
+        ta:{hira:["たべもの","たべもの · tabemono","음식(食べ物)"],kata:["タクシー","たくしー · takushii","택시"]},
+        chi:{hira:["ちず","ちず · chizu","지도(地図)"],kata:["チェックイン","ちぇっくいん · chekkuin","체크인"]},
+        tsu:{hira:["つぎ","つぎ · tsugi","다음(次)"],kata:["ツアー","つあー · tsuaa","투어"]},
+        te:{hira:["てにもつ","てにもつ · tenimotsu","수하물(手荷物)"],kata:["テイクアウト","ていくあうと · teikuauto","포장 주문"]},
+        to:{hira:["とっきゅう","とっきゅう · tokkyuu","특급열차(特急)"],kata:["トイレ","といれ · toire","화장실"]},
+        na:{hira:["なまビール","なまびーる · nama biiru","생맥주(生ビール)"],kata:["ナビ","なび · nabi","내비게이션"]},
+        ni:{hira:["にもつ","にもつ · nimotsu","짐, 수하물(荷物)"],kata:["コンビニ","こんびに · konbini","편의점"]},
+        nu:{hira:["ぬるい","ぬるい · nurui","미지근하다"],kata:["ヌードル","ぬーどる · nuudoru","면 요리, 누들"]},
+        ne:{hira:["ねだん","ねだん · nedan","가격(値段)"],kata:["ネットよやく","ねっとよやく · netto yoyaku","온라인 예약"]},
+        no:{hira:["のりば","のりば · noriba","타는 곳(乗り場)"],kata:["ノンストップ","のんすとっぷ · nonsutoppu","논스톱, 무정차"]},
+        ha:{hira:["はい","はい · hai","네"],kata:["ハンバーグ","はんばーぐ · hanbaagu","함박스테이크"]},
+        hi:{hira:["ひだり","ひだり · hidari","왼쪽(左)"],kata:["コーヒー","こーひー · koohii","커피"]},
+        fu:{hira:["ふろ","ふろ · furo","목욕탕, 욕조(風呂)"],kata:["フロント","ふろんと · furonto","호텔 프런트"]},
+        he:{hira:["へや","へや · heya","방(部屋)"],kata:["ヘアドライヤー","へあどらいやー · hea doraiyaa","헤어드라이어"]},
+        ho:{hira:["ほんじつ","ほんじつ · honjitsu","오늘, 금일(本日)"],kata:["ホテル","ほてる · hoteru","호텔"]},
+        ma:{hira:["まっすぐ","まっすぐ · massugu","곧장, 직진"],kata:["マップ","まっぷ · mappu","지도"]},
+        mi:{hira:["みぎ","みぎ · migi","오른쪽(右)"],kata:["ミネラルウォーター","みねらるうぉーたー · mineraru wootaa","생수"]},
+        mu:{hira:["むりょう","むりょう · muryou","무료(無料)"],kata:["ルームキー","るーむきー · ruumu kii","객실 열쇠"]},
+        me:{hira:["めん","めん · men","면(麺)"],kata:["メニュー","めにゅー · menyuu","메뉴"]},
+        mo:{hira:["もよりえき","もよりえき · moyori eki","가장 가까운 역(最寄り駅)"],kata:["モーニング","もーにんぐ · mooningu","아침 세트 메뉴"]},
+        ya:{hira:["やすい","やすい · yasui","싸다(安い)"],kata:["ヤキトリ","やきとり · yakitori","꼬치구이, 야키토리"]},
+        yu:{hira:["ゆかた","ゆかた · yukata","유카타(浴衣)"],kata:["ユースホステル","ゆーすほすてる · yuusu hosuteru","유스호스텔"]},
+        yo:{hira:["よやく","よやく · yoyaku","예약(予約)"],kata:["ヨーグルト","よーぐると · yooguruto","요구르트"]},
+        ra:{hira:["こちら","こちら · kochira","이쪽, 여기"],kata:["ラーメン","らーめん · raamen","라멘"]},
+        ri:{hira:["りょうかん","りょうかん · ryokan","료칸(旅館)"],kata:["リムジンバス","りむじんばす · rimujin basu","리무진 버스"]},
+        ru:{hira:["くるま","くるま · kuruma","자동차(車)"],kata:["ルート","るーと · ruuto","경로"]},
+        re:{hira:["れんらく","れんらく · renraku","연락(連絡)"],kata:["レンタカー","れんたかー · rentakaa","렌터카"]},
+        ro:{hira:["ろてんぶろ","ろてんぶろ · rotenburo","노천탕(露天風呂)"],kata:["ロビー","ろびー · robii","로비"]},
+        wa:{hira:["わさび","わさび · wasabi","와사비"],kata:["ワンデーパス","わんでーぱす · wandee pasu","1일권"]},
+        wo:{hira:["えきをでる","えきを でる · eki o deru","역에서 나가다"],kata:["ヲタク","おたく · otaku","오타쿠(강한 관심을 가진 사람)"]},
+        n:{hira:["おんせん","おんせん · onsen","온천(温泉)"],kata:["レストラン","れすとらん · resutoran","레스토랑"]}
+      };
+
+      var chartRows = [
+        {label:"모음",keys:["a","i","u","e","o"]},
+        {label:"K행",keys:["ka","ki","ku","ke","ko"]},
+        {label:"S행",keys:["sa","shi","su","se","so"]},
+        {label:"T행",keys:["ta","chi","tsu","te","to"]},
+        {label:"N행",keys:["na","ni","nu","ne","no"]},
+        {label:"H행",keys:["ha","hi","fu","he","ho"]},
+        {label:"M행",keys:["ma","mi","mu","me","mo"]},
+        {label:"Y행",keys:["ya",null,"yu",null,"yo"]},
+        {label:"R행",keys:["ra","ri","ru","re","ro"]},
+        {label:"W행",keys:["wa",null,null,null,"wo"]},
+        {label:"N",keys:["n",null,null,null,null]}
+      ];
+
+      var praiseMessages = ["すごい！", "さすが！", "いいね！", "よくできました！", "その調子！", "やったね！", "ばっちり！", "がんばって！"];
+      var praiseIcons = ["🎉", "⭐", "🗻", "⛩️", "🌸", "👏"];
+      var hintKinds = {
+        a:{hira:"greeting",kata:"hotel"}, i:{hira:"door",kata:"info"}, u:{hira:"bell",kata:"drink"}, e:{hira:"train",kata:"stairs"}, o:{hira:"restroom",kata:"food"},
+        ka:{hira:"gate",kata:"card"}, ki:{hira:"ticket",kata:"suitcase"}, ku:{hira:"plane",kata:"card"}, ke:{hira:"ticket",kata:"train"}, ko:{hira:"pin",kata:"locker"},
+        sa:{hira:"fish",kata:"gift"}, shi:{hira:"train",kata:"car"}, su:{hira:"greeting",kata:"suitcase"}, se:{hira:"seat",kata:"food"}, so:{hira:"noodles",kata:"icecream"},
+        ta:{hira:"food",kata:"car"}, chi:{hira:"map",kata:"hotel"}, tsu:{hira:"arrow",kata:"map"}, te:{hira:"suitcase",kata:"food"}, to:{hira:"train",kata:"restroom"},
+        na:{hira:"drink",kata:"compass"}, ni:{hira:"suitcase",kata:"shop"}, nu:{hira:"drink",kata:"noodles"}, ne:{hira:"coins",kata:"phone"}, no:{hira:"bus",kata:"train"},
+        ha:{hira:"greeting",kata:"food"}, hi:{hira:"arrow",kata:"drink"}, fu:{hira:"bath",kata:"bell"}, he:{hira:"hotel",kata:"dryer"}, ho:{hira:"calendar",kata:"hotel"},
+        ma:{hira:"arrow",kata:"map"}, mi:{hira:"arrow",kata:"water"}, mu:{hira:"gift",kata:"key"}, me:{hira:"noodles",kata:"food"}, mo:{hira:"train",kata:"food"},
+        ya:{hira:"coins",kata:"food"}, yu:{hira:"robe",kata:"hotel"}, yo:{hira:"calendar",kata:"food"}, ra:{hira:"arrow",kata:"noodles"}, ri:{hira:"hotel",kata:"bus"},
+        ru:{hira:"car",kata:"map"}, re:{hira:"phone",kata:"car"}, ro:{hira:"bath",kata:"hotel"}, wa:{hira:"food",kata:"ticket"}, wo:{hira:"train",kata:"camera"}, n:{hira:"bath",kata:"food"}
+      };
+
+      var hintEmojis = {
+        greeting:"🙇", door:"🚪", info:"ℹ️", bell:"🛎️", train:"🚆", stairs:"🛗", restroom:"🚻", food:"🍽️",
+        gate:"🚉", card:"💳", ticket:"🎫", suitcase:"🧳", plane:"✈️", pin:"📍", locker:"🔐", fish:"🐟",
+        gift:"🎁", car:"🚕", seat:"💺", noodles:"🍜", icecream:"🍦", map:"🗺️", arrow:"➡️", drink:"🥤",
+        compass:"🧭", shop:"🏪", coins:"🪙", phone:"📱", bus:"🚌", bath:"♨️", hotel:"🏨", dryer:"💨",
+        calendar:"📅", water:"💧", key:"🔑", robe:"👘", camera:"📷"
+      };
+
+      function hintEmoji(kind) {
+        return hintEmojis[kind] || "🧳";
+      }
+
+      var state = { script:"mix", count:10, questions:[], index:0, score:0, missed:[], answered:false, chartScript:"hiragana", praises:[], praiseIndex:0 };
+      var intro = document.getElementById("intro");
+      var quiz = document.getElementById("quiz");
+      var result = document.getElementById("result");
+      var kana = document.getElementById("kana");
+      var answers = document.getElementById("answers");
+      var feedback = document.getElementById("feedback");
+      var nextBtn = document.getElementById("nextBtn");
+      var chart = document.getElementById("chart");
+      var kanaChart = document.getElementById("kanaChart");
+      var exampleOverlay = document.getElementById("exampleOverlay");
+      var exampleCloseBtn = document.getElementById("exampleCloseBtn");
+      var lastExampleTrigger = null;
+
+      function shuffle(arr) {
+        var copy = arr.slice();
+        for (var i = copy.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = copy[i]; copy[i] = copy[j]; copy[j] = temp;
+        }
+        return copy;
+      }
+
+      function wireSegment(id, key, parse) {
+        var wrap = document.getElementById(id);
+        wrap.addEventListener("click", function (event) {
+          var button = event.target.closest("button");
+          if (!button) return;
+          Array.prototype.forEach.call(wrap.querySelectorAll("button"), function (b) {
+            b.setAttribute("aria-pressed", b === button ? "true" : "false");
+          });
+          state[key] = parse ? parse(button.dataset.value, 10) : button.dataset.value;
+        });
+      }
+
+      wireSegment("scriptOptions", "script");
+      wireSegment("countOptions", "count", parseInt);
+
+      function itemForKey(key) {
+        for (var i = 0; i < kanaData.length; i++) {
+          if (kanaData[i].romaji === key) return kanaData[i];
+        }
+        return null;
+      }
+
+      function openExample(item, trigger) {
+        var type = state.chartScript === "hiragana" ? "hira" : "kata";
+        var detail = examples[item.romaji][type];
+        lastExampleTrigger = trigger;
+        document.getElementById("exampleKana").textContent = item[type];
+        document.getElementById("exampleScript").textContent = (type === "hira" ? "히라가나" : "가타카나") + " · " + item.ko + " · " + item.romaji;
+        document.getElementById("exampleWord").textContent = detail[0];
+        document.getElementById("exampleReading").textContent = "읽기  " + detail[1];
+        document.getElementById("exampleMeaning").textContent = "뜻  " + detail[2];
+        exampleOverlay.hidden = false;
+        document.body.style.overflow = "hidden";
+        exampleCloseBtn.focus({preventScroll:true});
+      }
+
+      function closeExample() {
+        exampleOverlay.hidden = true;
+        document.body.style.overflow = "";
+        if (lastExampleTrigger) lastExampleTrigger.focus({preventScroll:true});
+      }
+
+      function renderChart() {
+        kanaChart.innerHTML = "";
+        kanaChart.setAttribute("aria-label", state.chartScript === "hiragana" ? "히라가나 오십음도" : "가타카나 오십음도");
+        var corner = document.createElement("span");
+        corner.className = "chart-corner";
+        corner.setAttribute("aria-hidden", "true");
+        kanaChart.appendChild(corner);
+        ["a","i","u","e","o"].forEach(function (vowel) {
+          var label = document.createElement("span");
+          label.className = "vowel-label";
+          label.textContent = vowel;
+          kanaChart.appendChild(label);
+        });
+
+        chartRows.forEach(function (row) {
+          var rowLabel = document.createElement("span");
+          rowLabel.className = "row-label";
+          rowLabel.textContent = row.label;
+          kanaChart.appendChild(rowLabel);
+          row.keys.forEach(function (key) {
+            if (!key) {
+              var empty = document.createElement("span");
+              empty.className = "kana-empty";
+              empty.setAttribute("aria-hidden", "true");
+              kanaChart.appendChild(empty);
+              return;
+            }
+            var item = itemForKey(key);
+            var type = state.chartScript === "hiragana" ? "hira" : "kata";
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "kana-cell";
+            button.setAttribute("aria-label", item[type] + ", " + item.ko + ", 예제 보기");
+            button.innerHTML = '<span class="glyph" lang="ja">' + item[type] + '</span><span class="sound">' + item.ko + ' · ' + item.romaji + '</span>';
+            button.addEventListener("click", function () { openExample(item, button); });
+            kanaChart.appendChild(button);
+          });
+        });
+      }
+
+      function openChart() {
+        intro.hidden = true;
+        quiz.hidden = true;
+        result.hidden = true;
+        chart.hidden = false;
+        renderChart();
+        window.scrollTo(0, 0);
+      }
+
+      function closeChart() {
+        chart.hidden = true;
+        intro.hidden = false;
+        window.scrollTo(0, 0);
+        document.getElementById("chartBtn").focus({preventScroll:true});
+      }
+
+      function createQuestions() {
+        return shuffle(kanaData).slice(0, state.count).map(function (item) {
+          var use = state.script === "mix" ? (Math.random() < .5 ? "hiragana" : "katakana") : state.script;
+          return { item:item, script:use, char: use === "hiragana" ? item.hira : item.kata };
+        });
+      }
+
+      function startQuiz() {
+        state.questions = createQuestions();
+        state.index = 0;
+        state.score = 0;
+        state.missed = [];
+        state.answered = false;
+        state.praises = shuffle(praiseMessages);
+        state.praiseIndex = 0;
+        intro.hidden = true;
+        result.hidden = true;
+        quiz.hidden = false;
+        renderQuestion();
+        window.scrollTo(0, 0);
+      }
+
+      function optionPool(correct) {
+        var sameRow = kanaData.filter(function (x) {
+          return x.romaji !== correct.romaji && x.romaji.charAt(0) === correct.romaji.charAt(0);
+        });
+        var rest = kanaData.filter(function (x) { return x.romaji !== correct.romaji && sameRow.indexOf(x) < 0; });
+        var chosen = shuffle(sameRow).slice(0, 2);
+        chosen = chosen.concat(shuffle(rest).slice(0, 3 - chosen.length));
+        chosen.push(correct);
+        return shuffle(chosen);
+      }
+
+      function renderQuestion() {
+        state.answered = false;
+        var q = state.questions[state.index];
+        var current = state.index + 1;
+        document.getElementById("progressBar").style.width = ((current / state.questions.length) * 100) + "%";
+        document.getElementById("progressText").textContent = current + " / " + state.questions.length;
+        document.getElementById("scriptLabel").textContent = q.script === "hiragana" ? "히라가나" : "가타카나";
+        document.getElementById("scoreLive").textContent = "정답 " + state.score;
+        kana.textContent = q.char;
+        var exampleType = q.script === "hiragana" ? "hira" : "kata";
+        var quizExample = document.getElementById("quizExample");
+        var detail = examples[q.item.romaji][exampleType];
+        document.getElementById("quizHintArt").textContent = hintEmoji(hintKinds[q.item.romaji][exampleType]);
+        document.getElementById("quizExampleWord").textContent = detail[0];
+        document.getElementById("quizExampleLabel").hidden = true;
+        document.getElementById("quizExampleReading").hidden = true;
+        document.getElementById("quizExampleMeaning").hidden = true;
+        quizExample.classList.remove("revealed");
+        quizExample.setAttribute("aria-label", "여행 예제 " + detail[0]);
+        feedback.textContent = "";
+        feedback.className = "feedback";
+        nextBtn.hidden = true;
+        answers.innerHTML = "";
+
+        optionPool(q.item).forEach(function (option) {
+          var button = document.createElement("button");
+          button.type = "button";
+          button.className = "answer";
+          button.dataset.romaji = option.romaji;
+          button.innerHTML = '<span class="ko">' + option.ko + '</span><span class="romaji">' + option.romaji + '</span>';
+          button.addEventListener("click", function () { chooseAnswer(button, option); });
+          answers.appendChild(button);
+        });
+      }
+
+      function revealQuizExample(q) {
+        var type = q.script === "hiragana" ? "hira" : "kata";
+        var detail = examples[q.item.romaji][type];
+        var quizExample = document.getElementById("quizExample");
+        document.getElementById("quizExampleWord").textContent = detail[0];
+        document.getElementById("quizExampleReading").textContent = "읽기  " + detail[1];
+        document.getElementById("quizExampleMeaning").textContent = "뜻  " + detail[2];
+        document.getElementById("quizExampleLabel").hidden = false;
+        document.getElementById("quizExampleReading").hidden = false;
+        document.getElementById("quizExampleMeaning").hidden = false;
+        quizExample.classList.add("revealed");
+        quizExample.setAttribute("aria-label", detail[0] + ", " + detail[1] + ", 뜻 " + detail[2]);
+      }
+
+      function chooseAnswer(button, option) {
+        if (state.answered) return;
+        state.answered = true;
+        var q = state.questions[state.index];
+        var correct = option.romaji === q.item.romaji;
+        var buttons = answers.querySelectorAll("button");
+        Array.prototype.forEach.call(buttons, function (b) {
+          b.disabled = true;
+          if (b.dataset.romaji === q.item.romaji) b.classList.add("correct");
+        });
+
+        revealQuizExample(q);
+        if (correct) {
+          state.score++;
+          if (state.praiseIndex >= state.praises.length) {
+            state.praises = shuffle(praiseMessages);
+            state.praiseIndex = 0;
+          }
+          var praise = state.praises[state.praiseIndex++];
+          var praiseIcon = praiseIcons[Math.floor(Math.random() * praiseIcons.length)];
+          feedback.innerHTML = '<span class="feedback-icon" aria-hidden="true">' + praiseIcon + '</span><span class="feedback-copy"><span class="praise-jp" lang="ja">' + praise + '</span><span class="answer-detail">정답 · ' + q.item.ko + ' · ' + q.item.romaji + '</span></span>';
+          feedback.className = "feedback good";
+        } else {
+          button.classList.add("wrong");
+          state.missed.push(q);
+          feedback.textContent = "아쉬워요 — 정답은 " + q.item.ko + " · " + q.item.romaji;
+          feedback.className = "feedback bad";
+        }
+        document.getElementById("scoreLive").textContent = "정답 " + state.score;
+        nextBtn.textContent = state.index === state.questions.length - 1 ? "결과 보기" : "다음 문제";
+        nextBtn.hidden = false;
+        nextBtn.focus({ preventScroll:true });
+      }
+
+      function nextQuestion() {
+        if (!state.answered) return;
+        if (state.index < state.questions.length - 1) {
+          state.index++;
+          renderQuestion();
+          kana.focus && kana.focus({ preventScroll:true });
+        } else {
+          showResult();
+        }
+      }
+
+      function showResult() {
+        quiz.hidden = true;
+        result.hidden = false;
+        var total = state.questions.length;
+        var rate = Math.round((state.score / total) * 100);
+        var title, copy, mark;
+        if (rate === 100) { title = "전부 맞혔어요."; copy = "46자 기본음이 아주 탄탄해요. 다음엔 더 빠르게 읽어보세요."; mark = "満"; }
+        else if (rate >= 80) { title = "거의 다 왔어요."; copy = "헷갈린 글자만 한 번 더 보면 금방 익숙해질 거예요."; mark = "良"; }
+        else if (rate >= 60) { title = "좋은 흐름이에요."; copy = "틀린 글자를 소리 내어 읽고 다시 도전해 보세요."; mark = "進"; }
+        else { title = "천천히 익혀가요."; copy = "열 글자씩 짧게 반복하면 모양과 소리가 자연스럽게 연결돼요."; mark = "習"; }
+        document.getElementById("resultMark").textContent = mark;
+        document.getElementById("resultTitle").textContent = title;
+        document.getElementById("resultCopy").textContent = copy;
+        document.getElementById("resultScore").textContent = state.score + " / " + total;
+        document.getElementById("resultRate").textContent = rate + "%";
+
+        var missedBox = document.getElementById("missedBox");
+        var missedList = document.getElementById("missedList");
+        missedList.innerHTML = "";
+        missedBox.hidden = state.missed.length === 0;
+        state.missed.forEach(function (q) {
+          var item = document.createElement("div");
+          item.className = "missed-item";
+          item.innerHTML = "<b lang=\"ja\">" + q.char + "</b><span>" + q.item.ko + " · " + q.item.romaji + "</span>";
+          missedList.appendChild(item);
+        });
+        window.scrollTo(0, 0);
+      }
+
+      document.getElementById("startBtn").addEventListener("click", startQuiz);
+      document.getElementById("retryBtn").addEventListener("click", startQuiz);
+      document.getElementById("chartBtn").addEventListener("click", openChart);
+      document.getElementById("chartBackBtn").addEventListener("click", closeChart);
+      document.getElementById("chartScriptOptions").addEventListener("click", function (event) {
+        var button = event.target.closest("button");
+        if (!button) return;
+        var wrap = event.currentTarget;
+        Array.prototype.forEach.call(wrap.querySelectorAll("button"), function (b) {
+          b.setAttribute("aria-pressed", b === button ? "true" : "false");
+        });
+        state.chartScript = button.dataset.value;
+        renderChart();
+      });
+      exampleCloseBtn.addEventListener("click", closeExample);
+      exampleOverlay.addEventListener("click", function (event) {
+        if (event.target === exampleOverlay) closeExample();
+      });
+      document.getElementById("homeBtn").addEventListener("click", function () {
+        result.hidden = true;
+        intro.hidden = false;
+        window.scrollTo(0, 0);
+      });
+      nextBtn.addEventListener("click", nextQuestion);
+      document.addEventListener("keydown", function (event) {
+        if (!exampleOverlay.hidden && event.key === "Escape") {
+          closeExample();
+          return;
+        }
+        if (quiz.hidden) return;
+        var n = Number(event.key);
+        if (!state.answered && n >= 1 && n <= 4) {
+          var candidate = answers.querySelectorAll("button")[n - 1];
+          if (candidate) candidate.click();
+        } else if (state.answered && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          nextQuestion();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
