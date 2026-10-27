@@ -431,6 +431,9 @@ function setView(v){
     worldMap=L.map('worldmap').setView([34.55559,126.59197],11);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(worldMap);
     L.marker([34.55559,126.59197]).addTo(worldMap).bindPopup('한빛정밀 A동<br/>전라남도 해남군').openPopup();
+    // 사파리 등에서 컨테이너 크기를 늦게 잡는 경우 대비: 크기 재계산
+    setTimeout(function(){worldMap.invalidateSize();},100);
+    setTimeout(function(){worldMap.invalidateSize();},600);
   }else{
     setTimeout(function(){worldMap.invalidateSize();},50);
   }
