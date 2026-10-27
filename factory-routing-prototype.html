@@ -38,13 +38,14 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
 #toast b{color:#22d3ee}
 @media(max-width:920px){main{flex-direction:column}.panel{flex:1 1 auto;width:100%}}
 #worldmap{width:100%;height:600px;display:none;background:#0a0e14}
+#mapStatus{display:none;font-size:13px;color:#ffd23f;background:#0d131c;border:1px solid #232c3d;border-radius:8px;padding:10px 12px;margin:0 0 8px;line-height:1.5}
 .factory-pin{background:#2f6fed;border:2px solid #fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 </style>
 </head>
 <body>
 <header>
   <h1>한빛정밀 A동 · 실내 경로탐색 프로토타입</h1>
-  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로 · v4</p>
+  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로 · v6</p>
 </header>
 <div class="controls">
   <label>출발지 <select id="fromSel"><option value="">선택</option></select></label>
@@ -55,12 +56,13 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
   <button class="floor" id="f2Btn">2F 연구·사무층</button>
   <button class="floor active" id="viewIndoorBtn">실내 도면</button>
   <button class="floor" id="viewMapBtn">🌍 전체 지도</button>
-  <span id="verTag" style="font-size:12px;color:#22d3ee;border:1px solid #22d3ee;border-radius:999px;padding:4px 10px">v5</span>
+  <span id="verTag" style="font-size:12px;color:#22d3ee;border:1px solid #22d3ee;border-radius:999px;padding:4px 10px">v6</span>
   <label class="chk"><input type="checkbox" id="graphToggle"/> 경로망 보기</label>
   <div class="hint">방을 직접 클릭해도 됩니다 — 첫 클릭은 출발지, 두 번째 클릭은 목적지로 지정됩니다.</div>
 </div>
 <main>
   <div class="map-wrap">
+    <div id="mapStatus"></div>
     <svg id="map" viewBox="0 0 830 600" role="img" aria-label="한빛정밀 A동 도면"></svg>
     <div id="worldmap" role="img" aria-label="한빛정밀 A동 위치 지도"></div>
     <div id="toast"></div>
@@ -421,20 +423,32 @@ document.getElementById('f1Btn').addEventListener('click',function(){setFloor(1)
 document.getElementById('f2Btn').addEventListener('click',function(){setFloor(2);});
 // 보기 전환: 실내 도면 / 전체 지도 (해남 위치)
 var worldMap=null;
+function setMapStatus(t){
+  var el=document.getElementById('mapStatus');
+  if(el){ el.textContent=t; el.style.display='block'; }
+}
 function setView(v){
   var indoor=(v==='indoor');
   svg.style.display=indoor?'block':'none';
   document.getElementById('worldmap').style.display=indoor?'none':'block';
   document.getElementById('viewIndoorBtn').classList.toggle('active',indoor);
   document.getElementById('viewMapBtn').classList.toggle('active',!indoor);
-  if(indoor) return;
+  if(indoor){ document.getElementById('mapStatus').style.display='none'; return; }
   var wm=document.getElementById('worldmap');
+  setMapStatus('지도 상태: 초기화 중… (L='+(typeof L)+')');
   if(typeof L==='undefined'){
     wm.innerHTML='<div style="padding:48px 20px;text-align:center;font-size:14px;line-height:1.8">지도를 불러오지 못했어요.<br/>사파리 콘텐츠 차단기가 지도 파일을 막고 있을 수 있어요.<br/>차단기를 끄고 다시 눌러보세요.</div>';
+    setMapStatus('지도 상태: 스크립트 로드 실패 (L 없음)');
     return;
   }
   if(!worldMap){
-    worldMap=L.map('worldmap').setView([34.55559,126.59197],11);
+    try{
+      worldMap=L.map('worldmap').setView([34.55559,126.59197],11);
+    }catch(e){
+      setMapStatus('지도 상태: 생성 오류 - '+e.message);
+      return;
+    }
+    setMapStatus('지도 상태: 생성됨 · 타일 로딩 중…');
     // 타일 서버가 막혀 있을 경우를 대비해 3개 제공자를 순서대로 시도
     var tileProviders=[
       {url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',attribution:'© OpenStreetMap'},
@@ -450,9 +464,13 @@ function setView(v){
         if(tileErrors>=4 && tileIndex<tileProviders.length-1){
           tileErrors=0; tileIndex++;
           worldMap.removeLayer(tileLayer);
+          setMapStatus('지도 상태: 타일 실패 → 제공자 '+(tileIndex+1)+'번 시도 중…');
           addTiles();
+        }else if(tileIndex>=tileProviders.length-1){
+          setMapStatus('지도 상태: 모든 타일 제공자 실패 (네트워크/차단기 확인 필요)');
         }
       });
+      tileLayer.on('load',function(){ setMapStatus('지도 상태: 로딩 완료'); });
     }
     addTiles();
     L.marker([34.55559,126.59197],{icon:L.divIcon({className:'',html:'<div class="factory-pin">🏭</div>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(worldMap).bindPopup('한빛정밀 A동<br/>전라남도 해남군').openPopup();
@@ -460,6 +478,7 @@ function setView(v){
     setTimeout(function(){worldMap.invalidateSize();},100);
     setTimeout(function(){worldMap.invalidateSize();},600);
   }else{
+    setMapStatus('지도 상태: 이미 생성됨 · 크기 재계산 중…');
     setTimeout(function(){worldMap.invalidateSize();},50);
   }
 }
