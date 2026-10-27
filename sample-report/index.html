@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>한빛정밀 A동 · 월간 운영 보고서 (HTML PPT 샘플)</title>
+<script src="chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1c2333;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.deck{flex:1;display:flex;flex-direction:column;max-width:1060px;width:100%;margin:0 auto;padding:20px 20px 8px}
+.slide{display:none;background:#f8f9fb;border-radius:16px;padding:36px 40px;min-height:560px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.slide.active{display:block}
+.slide h1{font-size:30px;line-height:1.3;margin-bottom:10px}
+.slide h2{font-size:24px;margin-bottom:6px}
+.slide .sub{color:#5b6b82;font-size:15px;margin-bottom:24px}
+.cover{display:flex;flex-direction:column;justify-content:center;height:560px}
+.cover .badge{display:inline-block;background:#2f6fed;color:#fff;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;margin-bottom:18px}
+.cover h1{font-size:40px}
+.cover p{color:#5b6b82;font-size:17px;line-height:1.7;margin-top:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:#fff;border:1px solid #e2e6ec;border-radius:12px;padding:16px}
+.kpi b{display:block;font-size:26px;color:#111}
+.kpi span{font-size:12px;color:#5b6b82}
+.kpi .up{color:#1f9d66;font-size:13px;font-weight:700}
+.kpi .down{color:#d64545;font-size:13px;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#fff;border:1px solid #e2e6ec;border-radius:12px;padding:18px}
+.card h3{font-size:15px;margin-bottom:12px}
+.chartbox{position:relative;height:230px}
+.chartbox.tall{height:260px}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filters button{border:1px solid #cbd5e1;background:#fff;color:#334155;padding:8px 14px;border-radius:999px;font-size:13px;cursor:pointer;font-weight:600}
+.filters button.on{background:#2f6fed;border-color:#2f6fed;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid #eef1f5}
+th{background:#eef2f7;color:#334155}
+.ok{color:#1f9d66;font-weight:700}.warn{color:#d97706;font-weight:700}.bad{color:#d64545;font-weight:700}
+ul.plan{font-size:16px;line-height:2.0;padding-left:20px}
+ul.plan li{margin-bottom:2px}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:1060px;width:100%;margin:0 auto;padding:14px 20px 22px}
+.nav button{background:#2f6fed;color:#fff;border:0;padding:11px 20px;border-radius:999px;font-size:15px;font-weight:700;cursor:pointer}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav button.ghost{background:transparent;border:1px solid #5b6b82;color:#cbd5e1}
+.dots{display:flex;gap:8px;align-items:center}
+.dots i{width:10px;height:10px;border-radius:50%;background:#5b6b82;cursor:pointer}
+.dots i.on{background:#ffd23f;width:26px;border-radius:999px}
+#counter{color:#cbd5e1;font-size:14px}
+.hint{color:#8b98ab;font-size:12px;text-align:center;padding-bottom:4px}
+@media(max-width:700px){
+  .slide{padding:24px 20px;min-height:0}
+  .cover{height:auto;padding:40px 20px}
+  .cover h1{font-size:30px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .chartbox{height:200px}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1. 표지 -->
+  <section class="slide active" data-slide="0">
+    <div class="cover">
+      <div><span class="badge">HTML PPT 샘플 · 동적 제어판 포함</span></div>
+      <h1>한빛정밀 A동<br/>월간 운영 보고서</h1>
+      <p>2026년 10월 운영 실적 · 생산 / 가동률 / 품질 / 설비<br/>
+      방향키(← →) 또는 아래 버튼으로 슬라이드를 넘기세요.<br/>
+      차트는 마우스를 올리면 수치가 뜨고, 필터 버튼으로 데이터를 바꿀 수 있습니다.</p>
+    </div>
+  </section>
+
+  <!-- 2. 대시보드 -->
+  <section class="slide" data-slide="1">
+    <h2>10월 핵심 지표 대시보드</h2>
+    <p class="sub">전월 대비 증감과 함께 한눈에 보는 이달 실적입니다.</p>
+    <div class="kpis">
+      <div class="kpi"><span>월 생산량</span><b>12,480대</b><span class="up">▲ 전월 대비 +8.2%</span></div>
+      <div class="kpi"><span>평균 가동률</span><b>91.4%</b><span class="up">▲ +2.1%p</span></div>
+      <div class="kpi"><span>불량률</span><b>0.8%</b><span class="down">▼ -0.3%p (개선)</span></div>
+      <div class="kpi"><span>납기 준수율</span><b>98.6%</b><span class="up">▲ +0.4%p</span></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>월별 생산량 추이 (7~10월)</h3><div class="chartbox"><canvas id="chMonthly"></canvas></div></div>
+      <div class="card"><h3>라인별 가동률 (10월)</h3><div class="chartbox"><canvas id="chUtil"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- 3. 생산 분석 (필터) -->
+  <section class="slide" data-slide="2">
+    <h2>생산 분석 — 라인별 필터</h2>
+    <p class="sub">아래 버튼을 누르면 차트 데이터가 바뀝니다. 막대는 생산량, 선은 불량률입니다.</p>
+    <div class="filters">
+      <button class="on" data-line="all">전체</button>
+      <button data-line="A">생산라인 A</button>
+      <button data-line="B">생산라인 B</button>
+      <button data-line="C">조립공정</button>
+    </div>
+    <div class="card"><h3 id="lineTitle">전체 — 월별 생산량 / 불량률</h3><div class="chartbox tall"><canvas id="chLine"></canvas></div></div>
+  </section>
+
+  <!-- 4. 설비 현황 -->
+  <section class="slide" data-slide="3">
+    <h2>설비 가동 현황 및 이슈</h2>
+    <p class="sub">10월 설비 상태와 처리된 이슈입니다.</p>
+    <table>
+      <tr><th>설비</th><th>가동률</th><th>상태</th><th>비고</th></tr>
+      <tr><td>사출기 1호</td><td>94.2%</td><td class="ok">정상</td><td>정기점검 완료 (10/12)</td></tr>
+      <tr><td>사출기 2호</td><td>88.7%</td><td class="warn">주의</td><td>금형 마모 — 11월 교체 예정</td></tr>
+      <tr><td>조립라인 컨베이어</td><td>92.5%</td><td class="ok">정상</td><td>-</td></tr>
+      <tr><td>검사장비 (비전)</td><td>85.1%</td><td class="bad">점검 필요</td><td>오검출 증가 — 캘리브레이션 11/3 예정</td></tr>
+    </table>
+  </section>
+
+  <!-- 5. 계획 -->
+  <section class="slide" data-slide="4">
+    <h2>11월 계획 및 마무리</h2>
+    <p class="sub">다음 달 중점 과제입니다.</p>
+    <ul class="plan">
+      <li>사출기 2호 금형 교체 (11/10, 생산 중단 4시간 내 완료 목표)</li>
+      <li>비전 검사장비 캘리브레이션 및 오검출 원인 분석 (11/3)</li>
+      <li>불량률 0.8% → 0.6% 목표, 조립공정 집중 관리</li>
+      <li>월 생산량 13,000대 목표 (가동률 92% 유지 전제)</li>
+    </ul>
+    <p style="margin-top:24px;color:#5b6b82;font-size:14px">* 본 문서는 HTML PPT 샘플입니다. 수치는 예시 데이터이며, 실제 실적과 무관합니다.</p>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn">← 이전</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn">다음 →</button>
+</div>
+<div class="nav" style="padding-top:0">
+  <span id="counter">1 / 5</span>
+  <button class="ghost" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+</div>
+<p class="hint">키보드 ← → 키로도 넘길 수 있습니다</p>
+
+<script>
+var slides=document.querySelectorAll('.slide');
+var dotsBox=document.getElementById('dots');
+var cur=0;
+var charts={};
+slides.forEach(function(_,i){
+  var d=document.createElement('i');
+  if(i===0) d.className='on';
+  d.addEventListener('click',function(){show(i);});
+  dotsBox.appendChild(d);
+});
+function makeMonthly(){
+  if(charts.monthly) return;
+  charts.monthly=new Chart(document.getElementById('chMonthly'),{
+    type:'bar',
+    data:{labels:['7월','8월','9월','10월'],
+      datasets:[{label:'생산량(대)',data:[10230,11450,11540,12480],backgroundColor:'#2f6fed',borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true}}}
+  });
+}
+function makeUtil(){
+  if(charts.util) return;
+  charts.util=new Chart(document.getElementById('chUtil'),{
+    type:'bar',
+    data:{labels:['생산라인 A','생산라인 B','조립공정'],
+      datasets:[{label:'가동률(%)',data:[93.1,90.2,91.0],backgroundColor:['#1f9d66','#2f6fed','#f59e0b'],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{min:0,max:100}}}
+  });
+}
+var lineData={
+  all:{title:'전체 — 월별 생산량 / 불량률',prod:[10230,11450,11540,12480],def:[1.4,1.2,1.1,0.8]},
+  A:{title:'생산라인 A — 월별 생산량 / 불량률',prod:[4200,4600,4700,5100],def:[1.2,1.0,0.9,0.7]},
+  B:{title:'생산라인 B — 월별 생산량 / 불량률',prod:[3800,4300,4400,4700],def:[1.6,1.4,1.3,0.9]},
+  C:{title:'조립공정 — 월별 생산량 / 불량률',prod:[2230,2550,2440,2680],def:[1.3,1.1,1.0,0.8]}
+};
+function makeLine(){
+  if(charts.line) return;
+  charts.line=new Chart(document.getElementById('chLine'),{
+    type:'bar',
+    data:{labels:['7월','8월','9월','10월'],
+      datasets:[
+        {label:'생산량(대)',data:lineData.all.prod,backgroundColor:'#2f6fed',borderRadius:6,yAxisID:'y'},
+        {label:'불량률(%)',data:lineData.all.def,type:'line',borderColor:'#d64545',backgroundColor:'#d64545',yAxisID:'y1',tension:0.3}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true},y1:{position:'right',min:0,max:2,grid:{drawOnChartArea:false}}}}
+  });
+}
+function initSlide(i){
+  if(i===1){ makeMonthly(); makeUtil(); }
+  if(i===2){ makeLine(); }
+  Object.keys(charts).forEach(function(k){ try{ charts[k].resize(); }catch(e){} });
+}
+function show(i){
+  if(i<0||i>=slides.length) return;
+  slides[cur].classList.remove('active');
+  dotsBox.children[cur].className='';
+  cur=i;
+  slides[cur].classList.add('active');
+  dotsBox.children[cur].className='on';
+  document.getElementById('counter').textContent=(cur+1)+' / '+slides.length;
+  document.getElementById('prevBtn').disabled=(cur===0);
+  document.getElementById('nextBtn').disabled=(cur===slides.length-1);
+  initSlide(cur);
+}
+document.getElementById('prevBtn').addEventListener('click',function(){show(cur-1);});
+document.getElementById('nextBtn').addEventListener('click',function(){show(cur+1);});
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight') show(cur+1);
+  if(e.key==='ArrowLeft') show(cur-1);
+});
+document.querySelectorAll('.filters button').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.filters button').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    var d=lineData[btn.getAttribute('data-line')];
+    document.getElementById('lineTitle').textContent=d.title;
+    charts.line.data.datasets[0].data=d.prod;
+    charts.line.data.datasets[1].data=d.def;
+    charts.line.update();
+  });
+});
+show(0);
+</script>
+</body>
+</html>
