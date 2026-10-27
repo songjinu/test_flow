@@ -44,7 +44,7 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
 <body>
 <header>
   <h1>한빛정밀 A동 · 실내 경로탐색 프로토타입</h1>
-  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로</p>
+  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로 · v4</p>
 </header>
 <div class="controls">
   <label>출발지 <select id="fromSel"><option value="">선택</option></select></label>
@@ -434,7 +434,26 @@ function setView(v){
   }
   if(!worldMap){
     worldMap=L.map('worldmap').setView([34.55559,126.59197],11);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(worldMap);
+    // 타일 서버가 막혀 있을 경우를 대비해 3개 제공자를 순서대로 시도
+    var tileProviders=[
+      {url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',attribution:'© OpenStreetMap'},
+      {url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',attribution:'© OpenStreetMap © CARTO',subdomains:'abcd'},
+      {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',attribution:'© Esri'}
+    ];
+    var tileIndex=0, tileLayer=null, tileErrors=0;
+    function addTiles(){
+      var p=tileProviders[tileIndex];
+      tileLayer=L.tileLayer(p.url,{maxZoom:19,attribution:p.attribution,subdomains:p.subdomains||'abc'}).addTo(worldMap);
+      tileLayer.on('tileerror',function(){
+        tileErrors++;
+        if(tileErrors>=4 && tileIndex<tileProviders.length-1){
+          tileErrors=0; tileIndex++;
+          worldMap.removeLayer(tileLayer);
+          addTiles();
+        }
+      });
+    }
+    addTiles();
     L.marker([34.55559,126.59197],{icon:L.divIcon({className:'',html:'<div class="factory-pin">🏭</div>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(worldMap).bindPopup('한빛정밀 A동<br/>전라남도 해남군').openPopup();
     // 사파리 등에서 컨테이너 크기를 늦게 잡는 경우 대비: 크기 재계산
     setTimeout(function(){worldMap.invalidateSize();},100);
