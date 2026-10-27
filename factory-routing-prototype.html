@@ -36,7 +36,7 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
 #toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%) translateY(10px);background:rgba(10,14,20,.94);border:1px solid #22d3ee;color:#e6edf3;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;max-width:94%;z-index:5}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast b{color:#22d3ee}
-@media(max-width:920px){main{flex-direction:column}.panel{flex:1 1 auto;width:100%}}
+@media(max-width:920px){main{flex-direction:column}.panel{flex:1 1 auto;width:100%}.map-wrap{width:100%}}
 #worldmap{width:100%;height:600px;display:none;background:#0a0e14}
 #mapStatus{display:none;font-size:13px;color:#ffd23f;background:#0d131c;border:1px solid #232c3d;border-radius:8px;padding:10px 12px;margin:0 0 8px;line-height:1.5}
 .factory-pin{background:#2f6fed;border:2px solid #fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
@@ -45,7 +45,7 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
 <body>
 <header>
   <h1>한빛정밀 A동 · 실내 경로탐색 프로토타입</h1>
-  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로 · v6</p>
+  <p>위치: 전라남도 해남군 (34.5556°N, 126.5920°E) · 가상 도면 기반 데모 · A* 최단경로 · v7</p>
 </header>
 <div class="controls">
   <label>출발지 <select id="fromSel"><option value="">선택</option></select></label>
@@ -56,7 +56,7 @@ svg#map{display:block;width:100%;height:auto;user-select:none;-webkit-user-selec
   <button class="floor" id="f2Btn">2F 연구·사무층</button>
   <button class="floor active" id="viewIndoorBtn">실내 도면</button>
   <button class="floor" id="viewMapBtn">🌍 전체 지도</button>
-  <span id="verTag" style="font-size:12px;color:#22d3ee;border:1px solid #22d3ee;border-radius:999px;padding:4px 10px">v6</span>
+  <span id="verTag" style="font-size:12px;color:#22d3ee;border:1px solid #22d3ee;border-radius:999px;padding:4px 10px">v7</span>
   <label class="chk"><input type="checkbox" id="graphToggle"/> 경로망 보기</label>
   <div class="hint">방을 직접 클릭해도 됩니다 — 첫 클릭은 출발지, 두 번째 클릭은 목적지로 지정됩니다.</div>
 </div>
@@ -475,13 +475,20 @@ function setView(v){
     addTiles();
     L.marker([34.55559,126.59197],{icon:L.divIcon({className:'',html:'<div class="factory-pin">🏭</div>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(worldMap).bindPopup('한빛정밀 A동<br/>전라남도 해남군').openPopup();
     // 사파리 등에서 컨테이너 크기를 늦게 잡는 경우 대비: 크기 재계산
-    setTimeout(function(){worldMap.invalidateSize();},100);
-    setTimeout(function(){worldMap.invalidateSize();},600);
+    setTimeout(function(){worldMap.invalidateSize();},50);
+    setTimeout(function(){worldMap.invalidateSize();},300);
+    setTimeout(function(){worldMap.invalidateSize();},1000);
   }else{
     setMapStatus('지도 상태: 이미 생성됨 · 크기 재계산 중…');
     setTimeout(function(){worldMap.invalidateSize();},50);
+    setTimeout(function(){worldMap.invalidateSize();},300);
   }
 }
+window.addEventListener('resize',function(){
+  if(worldMap && document.getElementById('worldmap').style.display!=='none'){
+    worldMap.invalidateSize();
+  }
+});
 document.getElementById('viewIndoorBtn').addEventListener('click',function(){setView('indoor');});
 document.getElementById('viewMapBtn').addEventListener('click',function(){setView('map');});
 document.getElementById('graphToggle').addEventListener('change',function(e){
