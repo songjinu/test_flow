@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b46">
+<title>2026.12.12~15 도쿄·아타미 가족여행 요약</title>
+<style>
+  :root{
+    --ink:#1a1c22;
+    --sub:#5f6570;
+    --line:#e6e2d9;
+    --bg:#f7f5f0;
+    --card:#ffffff;
+    --navy:#1d2b46;
+    --accent:#b8482c;
+    --accent-soft:#fbf0ea;
+    --green:#2f6b4f;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 18px 56px;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgba(184,72,44,.42) 0%, rgba(184,72,44,0) 55%),
+      radial-gradient(90% 70% at 0% 100%, rgba(96,132,180,.35) 0%, rgba(96,132,180,0) 60%),
+      linear-gradient(160deg,#22345a 0%,#1d2b46 45%,#16202f 100%);
+    color:#fff;
+    padding:44px 24px 40px;
+    border-radius:0 0 26px 26px;
+    box-shadow:0 10px 30px -18px rgba(23,32,47,.9);
+  }
+  .hero-inner{max-width:680px;margin:0 auto;}
+  .kicker{
+    display:inline-block;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:#f0b49f;
+    border:1px solid rgba(240,180,159,.45);
+    border-radius:999px;
+    padding:5px 11px;
+    margin-bottom:18px;
+  }
+  h1{
+    margin:0 0 10px;
+    font-size:clamp(21px,6.4vw,31px);
+    line-height:1.28;
+    letter-spacing:-.02em;
+    font-weight:700;
+  }
+  .hero-sub{
+    margin:0;
+    font-size:15px;
+    color:#dfe4ee;
+  }
+  .hero-sub strong{color:#fff;font-weight:600;}
+  .route{
+    margin-top:22px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 4px;
+    align-items:center;
+    font-size:12px;
+    color:#cdd6e6;
+  }
+  .route span.dot{color:#8fa0bd;}
+  .route b{font-weight:600;color:#fff;}
+
+  /* ---------- section ---------- */
+  section{margin-top:34px;}
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;padding-left:2px;}
+  .sec-num{
+    font-size:11px;letter-spacing:.12em;color:var(--accent);
+    font-weight:700;
+  }
+  h2{
+    margin:0;
+    font-size:18px;
+    letter-spacing:-.01em;
+    font-weight:700;
+  }
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 1px 2px rgba(26,28,34,.03),0 10px 24px -22px rgba(26,28,34,.35);
+  }
+  .card + .card{margin-top:12px;}
+
+  /* summary grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .tile{
+    margin:0;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:13px 14px;
+  }
+  .tile dt{font-size:11px;letter-spacing:.06em;color:var(--sub);margin:0 0 3px;}
+  .tile dd{margin:0;font-size:14px;font-weight:600;line-height:1.4;}
+
+  /* flight rows */
+  .row{display:flex;gap:12px;align-items:flex-start;}
+  .row + .row{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);}
+  .badge{
+    flex:0 0 auto;
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+    padding:4px 8px;border-radius:8px;
+    background:#eef1f6;color:#3a4761;
+    min-width:52px;text-align:center;
+  }
+  .badge.go{background:var(--accent-soft);color:var(--accent);}
+  .row-body{flex:1;min-width:0;}
+  .flight-no{font-size:12px;color:var(--sub);letter-spacing:.04em;margin:0 0 4px;}
+  .times{
+    display:flex;align-items:center;gap:8px;
+    font-size:19px;font-weight:700;letter-spacing:-.01em;
+    line-height:1.3;
+  }
+  .times small{font-size:12px;font-weight:500;color:var(--sub);letter-spacing:0;}
+  .arrow{color:#b9bec8;font-size:14px;}
+  .places{font-size:12.5px;color:var(--sub);margin-top:2px;}
+
+  /* hotel */
+  .stay{position:relative;}
+  .stay-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .stay-when{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.02em;}
+  .stay-title{margin:6px 0 2px;font-size:17px;font-weight:700;letter-spacing:-.01em;}
+  .stay-addr{font-size:12.5px;color:var(--sub);margin:0 0 12px;}
+  .stay-addr .jp{letter-spacing:.02em;}
+  .kv{display:flex;gap:8px;font-size:14px;margin:5px 0;}
+  .kv .k{color:var(--sub);flex:0 0 68px;font-size:13px;padding-top:1px;}
+  .kv .v{flex:1;font-weight:500;}
+
+  .code{
+    margin-top:14px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:#f4f6f9;border:1px dashed #c3ccda;border-radius:12px;
+    padding:12px 14px;
+  }
+  .code .lbl{font-size:11px;letter-spacing:.08em;color:var(--sub);}
+  .code .val{font-size:22px;font-weight:700;letter-spacing:.14em;color:var(--navy);}
+  .note{
+    margin-top:12px;
+    font-size:12.5px;color:var(--sub);
+    background:#faf9f6;border-left:3px solid #e2ded4;border-radius:0 8px 8px 0;
+    padding:9px 12px;
+  }
+  .alert{
+    margin-top:12px;
+    font-size:13px;line-height:1.55;
+    background:var(--accent-soft);
+    border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;
+    padding:10px 12px;
+    color:#7a3220;
+  }
+  .alert b{color:#6b2a19;}
+
+  /* train */
+  .train .times{font-size:18px;}
+  .seat{
+    margin-top:12px;font-size:12.5px;color:var(--sub);
+    display:flex;gap:6px;flex-wrap:wrap;
+  }
+  .pill{
+    display:inline-block;font-size:11.5px;font-weight:600;
+    padding:3px 9px;border-radius:999px;
+    background:#eef1f6;color:#3a4761;
+  }
+
+  /* day timeline */
+  .day{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(26,28,34,.03);
+  }
+  .day + .day{margin-top:12px;}
+  .day-head{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 16px;
+    background:linear-gradient(180deg,#fbfaf7,#f6f4ee);
+    border-bottom:1px solid var(--line);
+  }
+  .day-no{
+    flex:0 0 auto;
+    width:38px;height:38px;border-radius:11px;
+    background:var(--navy);color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    line-height:1;
+  }
+  .day-no span{font-size:9px;letter-spacing:.1em;opacity:.75;}
+  .day-no b{font-size:15px;margin-top:2px;}
+  .day-date{font-size:13px;font-weight:700;letter-spacing:.01em;}
+  .day-title{font-size:12.5px;color:var(--sub);margin-top:1px;}
+  .tl{list-style:none;margin:0;padding:8px 16px 14px 16px;}
+  .tl li{
+    display:flex;gap:12px;
+    padding:9px 0 9px 8px;
+    position:relative;
+    border-left:1px solid #ebe7de;
+    margin-left:6px;
+  }
+  .tl li:last-child{border-left-color:transparent;}
+  .tl li::before{
+    content:"";position:absolute;left:-4px;top:15px;
+    width:7px;height:7px;border-radius:50%;
+    background:#d8d3c8;border:2px solid #fff;
+  }
+  .tl li.key::before{background:var(--accent);}
+  .tl .t{
+    flex:0 0 52px;font-size:12.5px;font-weight:700;color:#3b4250;
+    letter-spacing:-.01em;padding-top:1px;
+  }
+  .tl .d{flex:1;font-size:13.5px;line-height:1.5;color:#2a2d34;}
+  .tl .d em{font-style:normal;color:var(--sub);font-size:12.5px;display:block;margin-top:1px;}
+
+  /* checklist */
+  .check{list-style:none;margin:0;padding:0;}
+  .check li{
+    display:flex;gap:11px;align-items:flex-start;
+    font-size:14px;padding:10px 0;
+    border-bottom:1px solid #f0ede6;
+  }
+  .check li:last-child{border-bottom:0;padding-bottom:0;}
+  .check .box{
+    flex:0 0 auto;width:19px;height:19px;border-radius:6px;
+    border:1.5px solid #cdd3de;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:#fff;line-height:1;
+  }
+  .check .box.on{background:var(--green);border-color:var(--green);}
+  .check strong{font-weight:600;}
+  .check small{display:block;color:var(--sub);font-size:12.5px;margin-top:1px;}
+
+  /* footer */
+  .all{
+    display:block;margin-top:28px;
+    text-align:center;text-decoration:none;
+    background:var(--navy);color:#fff;
+    border-radius:14px;padding:16px 18px;
+    font-size:15px;font-weight:600;
+    box-shadow:0 10px 24px -16px rgba(29,43,70,.9);
+  }
+  .all span{display:block;font-size:11.5px;font-weight:400;color:#b9c4d9;margin-top:3px;}
+  .all:active{transform:translateY(1px);}
+  .foot{
+    margin-top:22px;text-align:center;
+    font-size:11.5px;color:#7d838d;line-height:1.7;
+  }
+  .foot a{color:#6f7680;text-decoration:none;word-break:break-all;}
+  @media (max-width:360px){
+    .grid{grid-template-columns:1fr;}
+    .tl .t{flex-basis:46px;font-size:12px;}
+  }
+  @media print{
+    body{background:#fff;}
+    .hero{box-shadow:none;}
+    .all{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">2026 Winter · Tokyo &amp; Atami</div>
+    <h1>2026.12.12(토) ~ 12.15(화)<br>도쿄·아타미 가족여행</h1>
+    <p class="hero-sub"><strong>3박 4일</strong> · 진우 · 선영 · 지호</p>
+    <div class="route">
+      <b>김포</b><span class="dot">→</span><b>하네다</b><span class="dot">→</span>아키하바라 1박<span class="dot">→</span>아타미 2박<span class="dot">→</span><b>하네다</b>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="grid">
+      <dl class="tile"><dt>항공</dt><dd>ANA 직항 왕복<br><span style="font-weight:500;font-size:12.5px;color:var(--sub)">3명 발권 완료</span></dd></dl>
+      <dl class="tile"><dt>숙소</dt><dd>아키하바라 1박<br>+ 후루야 료칸 2박</dd></dl>
+      <dl class="tile"><dt>신칸센</dt><dd>왕복 QR 티켓<br><span style="font-weight:500;font-size:12.5px;color:var(--sub)">11호차 5-A·B·C</span></dd></dl>
+      <dl class="tile"><dt>인원</dt><dd>가족 3명<br><span style="font-weight:500;font-size:12.5px;color:var(--sub)">진우·선영·지호</span></dd></dl>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>항공</h2></div>
+    <div class="card">
+      <div class="row">
+        <div class="badge go">출국</div>
+        <div class="row-body">
+          <p class="flight-no num">12.12 (토) · NH862</p>
+          <div class="times num">07:45 <span class="arrow">→</span> 09:45</div>
+          <div class="places">김포 <span class="arrow">→</span> 하네다</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="badge">귀국</div>
+        <div class="row-body">
+          <p class="flight-no num">12.15 (화) · NH867</p>
+          <div class="times num">20:00 <span class="arrow">→</span> 22:30</div>
+          <div class="places">하네다 <span class="arrow">→</span> 김포</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>숙소</h2></div>
+
+    <article class="card stay">
+      <div class="stay-top">
+        <div>
+          <div class="stay-when">12.12(토) ~ 12.13(일) · 도쿄</div>
+          <h3 class="stay-title">Fit Inn Akihabara</h3>
+        </div>
+        <span class="pill">1박</span>
+      </div>
+      <p class="stay-addr">도쿄도 지요다구 <span class="jp">히가시칸다 2-4-11</span></p>
+      <div class="kv"><span class="k">체크인</span><span class="v num">15:00 ~ <span style="color:var(--sub);font-weight:400">(프런트 없음·셀프)</span></span></div>
+      <div class="kv"><span class="k">체크아웃</span><span class="v num">10:00</span></div>
+      <div class="kv"><span class="k">짐 보관</span><span class="v num">12시경 도착해 맡기고 점심 → 15:00 정식 체크인</span></div>
+
+      <div class="code">
+        <span class="lbl">셀프 체크인</span>
+        <span class="val" style="font-size:14px;font-weight:600;letter-spacing:0;color:var(--sub)">방 번호·키박스 코드는 12/11 16:00 확인</span>
+      </div>
+      <p class="note"><b>체크인 코드</b>는 공개 페이지에 싣지 않았어요. 체크인 전날 <span class="num">12/11 16:00</span>부터 예약 링크에서 확인할 수 있습니다.</p>
+    </article>
+
+    <article class="card stay">
+      <div class="stay-top">
+        <div>
+          <div class="stay-when">12.13(일) ~ 12.15(화) · 아타미</div>
+          <h3 class="stay-title">후루야 료칸 <span class="jp" style="font-size:14px;font-weight:500;color:var(--sub)">古屋旅館</span></h3>
+        </div>
+        <span class="pill">2박</span>
+      </div>
+      <div class="kv"><span class="k">체크인</span><span class="v num">15:00 ~ 18:00</span></div>
+      <div class="kv"><span class="k">체크아웃</span><span class="v num">11:00</span></div>
+      <div class="kv"><span class="k">포함</span><span class="v">객실 온천 · 조식·석식(객실 식사)</span></div>
+      <div class="alert"><b>18:00 석식 시작 — 시간 엄수.</b> 두 날 모두 저녁이 18:00에 시작해요. 13일은 15:00 체크인을 목표로 움직이고, 열차가 늦어지면 바로 료칸에 연락합니다.</div>
+    </article>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>신칸센</h2></div>
+    <div class="card train">
+      <div class="row">
+        <div class="badge go">12.13</div>
+        <div class="row-body">
+          <p class="flight-no">도쿄역 → 아타미 · 코다마 829</p>
+          <div class="times num">13:27 <span class="arrow">→</span> 14:10</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="badge">12.15</div>
+        <div class="row-body">
+          <p class="flight-no">아타미 → 시나가와 · 코다마 824</p>
+          <div class="times num">15:02 <span class="arrow">→</span> 15:40</div>
+        </div>
+      </div>
+      <div class="seat">
+        <span class="pill">11호차</span><span class="pill">5-A</span><span class="pill">5-B</span><span class="pill">5-C</span><span class="pill">QR 티켓 탑승</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>4일 동선</h2></div>
+
+    <article class="day">
+      <div class="day-head">
+        <div class="day-no"><span>DAY</span><b>1</b></div>
+        <div>
+          <div class="day-date num">12.12 (토)</div>
+          <div class="day-title">하네다 도착 → 아키하바라, 피규어 쇼핑</div>
+        </div>
+      </div>
+      <ul class="tl">
+        <li><span class="t num">09:45</span><span class="d">하네다 도착<em>입국·수하물 수령</em></span></li>
+        <li><span class="t num">10:30</span><span class="d">하네다 → 시나가와 → 아키하바라<em>게이큐 · 야마노테선, 약 40분</em></span></li>
+        <li class="key"><span class="t num">12:00</span><span class="d">호텔에 짐 맡기고 점심</span></li>
+        <li><span class="t num">14:00</span><span class="d">피규어·애니 굿즈 쇼핑<em>JR 아키하바라역 주변</em></span></li>
+        <li><span class="t num">18:00</span><span class="d">저녁 먹고 일찍 휴식</span></li>
+      </ul>
+    </article>
+
+    <article class="day">
+      <div class="day-head">
+        <div class="day-no"><span>DAY</span><b>2</b></div>
+        <div>
+          <div class="day-date num">12.13 (일)</div>
+          <div class="day-title">아타미로 이동, 료칸에서 온천·가이세키</div>
+        </div>
+      </div>
+      <ul class="tl">
+        <li><span class="t num">08:30</span><span class="d">아침과 짐 정리</span></li>
+        <li class="key"><span class="t num">11:00</span><span class="d">아키하바라 출발 → 도쿄역<em>야마노테선 약 5분, 도쿄역에서 이른 점심</em></span></li>
+        <li class="key"><span class="t num">13:27</span><span class="d">신칸센 코다마 829 탑승</span></li>
+        <li class="key"><span class="t num">14:10</span><span class="d">아타미 도착 → 료칸으로 직행<em>관광 없이 바로 이동</em></span></li>
+        <li><span class="t num">15:00</span><span class="d">후루야 료칸 체크인 · 객실 온천</span></li>
+        <li class="key"><span class="t num">18:00</span><span class="d">객실 가이세키 저녁</span></li>
+      </ul>
+    </article>
+
+    <article class="day">
+      <div class="day-head">
+        <div class="day-no"><span>DAY</span><b>3</b></div>
+        <div>
+          <div class="day-date num">12.14 (월)</div>
+          <div class="day-title">기노미야 신사 · 아타미 긴자 · 선비치</div>
+        </div>
+      </div>
+      <ul class="tl">
+        <li><span class="t num">아침</span><span class="d">객실에서 조식</span></li>
+        <li><span class="t num">오전</span><span class="d">기노미야 신사<em>거대한 녹나무와 신사 분위기</em></span></li>
+        <li><span class="t num">점심</span><span class="d">아타미 시내에서 점심 + 디저트</span></li>
+        <li><span class="t num">오후</span><span class="d">아타미 긴자 상점가 · 선비치 산책</span></li>
+        <li class="key"><span class="t num">17:00</span><span class="d">료칸 복귀<em>18:00 저녁 전까지 반드시</em></span></li>
+        <li class="key"><span class="t num">18:00</span><span class="d">가이세키 · 객실 온천</span></li>
+      </ul>
+    </article>
+
+    <article class="day">
+      <div class="day-head">
+        <div class="day-no"><span>DAY</span><b>4</b></div>
+        <div>
+          <div class="day-date num">12.15 (화)</div>
+          <div class="day-title">마지막 온천 → 아타미 → 하네다 → 귀국</div>
+        </div>
+      </div>
+      <ul class="tl">
+        <li><span class="t num">08:00</span><span class="d">객실 조식 · 마지막 온천</span></li>
+        <li class="key"><span class="t num">11:00</span><span class="d">후루야 체크아웃 → 아타미역 근처 점심</span></li>
+        <li class="key"><span class="t num">15:02</span><span class="d">신칸센 코다마 824 탑승<em>아타미 → 시나가와 15:40</em></span></li>
+        <li><span class="t num">15:40</span><span class="d">시나가와 → 하네다 T3<em>게이큐, 애플페이 터치</em></span></li>
+        <li><span class="t num">16:10</span><span class="d">하네다 T3 도착<em>체크인·수하물·저녁까지 넉넉히</em></span></li>
+        <li class="key"><span class="t num">20:00</span><span class="d">NH867 하네다 출발 → 22:30 김포 도착</span></li>
+      </ul>
+    </article>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>가족 체크포인트</h2></div>
+    <div class="card">
+      <ul class="check">
+        <li><span class="box on">✓</span><span><strong>비행·신칸센·숙소 모두 예약 완료</strong><small>추가로 결제하거나 예약할 것은 없어요.</small></span></li>
+        <li><span class="box on">✓</span><span><strong>아키하바라 숙소 온라인 사전등록 완료</strong><small>셀프 체크인 · 방 번호·키박스 코드는 12/11 16:00 확인</small></span></li>
+        <li><span class="box"></span><span><strong>방풍 아우터 · 편한 신발 · 보조배터리</strong><small>12월 바닷가라 바람이 차요. 온천 후 산책용 양말도.</small></span></li>
+        <li><span class="box"></span><span><strong>13일 15:00 체크인 목표</strong><small>18:00 석식 시작. 지연되면 료칸에 바로 연락.</small></span></li>
+        <li><span class="box"></span><span><strong>15일 하네다 3시간 전 도착</strong><small>16:10경 T3 도착 → 20:00 출발.</small></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <a class="all" href="https://songjinu.github.io/test_flow/family/family-trip.html">
+    전체 상세 일정 보기
+    <span>지도·경로·먹거리 후보까지</span>
+  </a>
+
+  <p class="foot">
+    2026.11.27 기준 요약 · 예약 변동 시 원본 페이지 확인<br>
+    <a href="https://songjinu.github.io/test_flow/family/family-trip.html">songjinu.github.io/test_flow/family/family-trip.html</a>
+  </p>
+
+</main>
+</body>
+</html>
